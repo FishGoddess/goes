@@ -13,13 +13,13 @@ const (
 
 type token struct{}
 
-// Limiter limits the max number of goroutines.
+// Limiter limits the simultaneous number of goroutines.
 type Limiter struct {
 	tokens chan token
 	wg     sync.WaitGroup
 }
 
-// NewLimiter creates a limiter with limit.
+// NewLimiter creates a new limiter with limit.
 func NewLimiter(limit int) *Limiter {
 	if limit < minLimit {
 		limit = minLimit
