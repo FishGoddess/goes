@@ -1,17 +1,18 @@
-# 📝 Goes
+# 🦉 Goes
 
 [![Go Doc](_icons/godoc.svg)](https://pkg.go.dev/github.com/FishGoddess/goes)
 [![License](_icons/license.svg)](https://opensource.org/licenses/MIT)
-[![License](_icons/build.svg)](_icons/build.svg)
-[![License](_icons/coverage.svg)](_icons/coverage.svg)
+[![Coverage](_icons/coverage.svg)](./_icons/coverage.svg)
+![Test](https://github.com/FishGoddess/goes/actions/workflows/test.yml/badge.svg)
 
-**Goes** is a lightweight lib for limiting goroutines.
+**Goes** is a easy-to-use and lightweight lib for limiting goroutines.
 
 [阅读中文版的文档](./README.md)
 
 ### 🥇 Features
 
-* Limit goroutines, that's it.
+* Spin lock with backoff strategy.
+* Limiter only limits the number of simultaneous goroutines, not reuses goroutines.
 
 _Check [HISTORY.md](./HISTORY.md) and [FUTURE.md](./FUTURE.md) to know about more information._
 
@@ -43,11 +44,8 @@ func main() {
 }
 ```
 
+_Check more examples in [_examples](./_examples)._
+
 ### 👥 Contributing
 
 If you find that something is not working as expected please open an _**issue**_.
-
-At last, I want to thank JetBrains for **free JetBrains Open Source license(s)**, because goes is developed with Idea /
-GoLand under it.
-
-<a href="https://www.jetbrains.com/?from=goes" target="_blank"><img src="./_icons/jetbrains.png" width="250"/></a>
