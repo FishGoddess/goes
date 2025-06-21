@@ -11,6 +11,7 @@
 
 ### 🥇 功能特性
 
+* 支持退避策略的自旋锁。
 * Limiter 只限制同时执行的协程数，不复用协程。
 
 _历史版本的特性请查看 [HISTORY.md](./HISTORY.md)。未来版本的新特性和计划请查看 [FUTURE.md](./FUTURE.md)。_
@@ -42,6 +43,8 @@ func main() {
 	limiter.Wait()
 }
 ```
+
+_更多使用案例请查看 [_examples](./_examples) 目录。_
 
 ### 👥 贡献者
 

@@ -11,6 +11,7 @@
 
 ### 🥇 Features
 
+* Spin lock with backoff strategy.
 * Limiter only limits the number of simultaneous goroutines, not reuses goroutines.
 
 _Check [HISTORY.md](./HISTORY.md) and [FUTURE.md](./FUTURE.md) to know about more information._
@@ -42,6 +43,8 @@ func main() {
 	limiter.Wait()
 }
 ```
+
+_Check more examples in [_examples](./_examples)._
 
 ### 👥 Contributing
 

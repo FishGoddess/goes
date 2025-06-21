@@ -46,7 +46,7 @@ func (l *Limiter) releaseToken() {
 	}
 }
 
-// Go starts a goroutine with token.
+// Go starts a goroutine to run f().
 func (l *Limiter) Go(f func()) {
 	l.acquireToken()
 	l.wg.Add(1)
