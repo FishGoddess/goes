@@ -18,16 +18,16 @@ func TestLimiter(t *testing.T) {
 	var countMap = make(map[int64]int, 16)
 	var lock sync.Mutex
 
-	totalCount := 100
+	totalCount := 10 * limit
 	for i := 0; i < totalCount; i++ {
 		limiter.Go(func() {
-			now := time.Now().UnixMilli()
+			now := time.Now().UnixMilli() / 10
 
 			lock.Lock()
 			countMap[now] = countMap[now] + 1
 			lock.Unlock()
 
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(10 * time.Millisecond)
 		})
 	}
 
@@ -38,7 +38,7 @@ func TestLimiter(t *testing.T) {
 		gotTotalCount = gotTotalCount + count
 
 		if count != limit {
-			t.Logf("now %d: count %d != limit %d", now, count, limit)
+			t.Fatalf("now %d: count %d != limit %d", now, count, limit)
 		}
 	}
 
