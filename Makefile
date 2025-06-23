@@ -5,5 +5,8 @@ all: test
 test:
 	go test -cover ./...
 
+bench:
+	go test -v ./_examples/performance_test.go -run=none -bench=. -benchmem -benchtime=1s
+
 fmt:
 	go fmt ./...

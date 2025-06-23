@@ -39,7 +39,7 @@ func NewPool(size int, workerLimit int) *Pool {
 	return pool
 }
 
-func (p *Pool) Go(f func()) {
+func (p *Pool) Submit(task func()) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 
@@ -48,7 +48,7 @@ func (p *Pool) Go(f func()) {
 	}
 
 	worker := p.workers[p.index]
-	worker.Accept(f)
+	worker.Accept(task)
 
 	p.index++
 

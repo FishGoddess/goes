@@ -21,7 +21,7 @@ func TestPool(t *testing.T) {
 
 	totalCount := 10 * size
 	for i := 0; i < totalCount; i++ {
-		pool.Go(func() {
+		pool.Submit(func() {
 			now := time.Now().UnixMilli() / 10
 
 			lock.Lock()

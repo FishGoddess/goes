@@ -46,6 +46,30 @@ func main() {
 
 _Check more examples in [_examples](./_examples)._
 
+### 🗡️ Benchmarks
+
+```bash
+$ make bench
+```
+
+```bash
+goos: linux
+goarch: amd64
+cpu: AMD EPYC 7K62 48-Core Processor
+
+BenchmarkLimiter-2               2417040               498.5 ns/op            24 B/op          1 allocs/op
+BenchmarkPool-2                 23793781                49.9 ns/op             0 B/op          0 allocs/op
+BenchmarkAntsPool-2              4295964               271.7 ns/op             0 B/op          0 allocs/op
+
+BenchmarkLimiterTime-2:  num is 1000000, cost is 300.936441ms
+BenchmarkPoolTime-2:     num is 1000000, cost is  51.350509ms
+BenchmarkAntsPoolTime-2: num is  999744, cost is 346.972287ms
+```
+
+> As you can see, goes.Pool is 5x faster than ants.Pool which has more features, so try goes if you want better performance and less features.
+
+> Benchmarks: [_examples/performance_test.go](./_examples/performance_test.go).
+
 ### 👥 Contributing
 
 If you find that something is not working as expected please open an _**issue**_.
