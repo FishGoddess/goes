@@ -4,15 +4,17 @@
 
 package goes
 
+type Task = func()
+
 type worker struct {
-	pool  *Pool
-	tasks chan func()
+	executor  *Executor
+	taskQueue chan Task
 }
 
-func newWorker(pool *Pool) *worker {
-	tasks := make(chan func(), pool.conf.queueSize)
+func newWorker(executor *Executor) *worker {
+	taskQueue := make(chan Task, executor.conf.workerQueueSize)
 
-	w := &worker{pool: pool, tasks: tasks}
+	w := &worker{executor: executor, taskQueue: taskQueue}
 	w.work()
 	return w
 }
@@ -20,7 +22,7 @@ func newWorker(pool *Pool) *worker {
 func (w *worker) handle(task func()) {
 	defer func() {
 		if r := recover(); r != nil {
-			w.pool.conf.recover(r)
+			w.executor.conf.recover(r)
 		}
 	}()
 
@@ -28,11 +30,11 @@ func (w *worker) handle(task func()) {
 }
 
 func (w *worker) work() {
-	w.pool.wg.Add(1)
+	w.executor.wg.Add(1)
 	go func() {
-		defer w.pool.wg.Done()
+		defer w.executor.wg.Done()
 
-		for task := range w.tasks {
+		for task := range w.taskQueue {
 			if task == nil {
 				break
 			}
@@ -40,7 +42,7 @@ func (w *worker) work() {
 			w.handle(task)
 		}
 
-		close(w.tasks)
+		close(w.taskQueue)
 	}()
 }
 
@@ -50,10 +52,10 @@ func (w *worker) Accept(task func()) {
 		return
 	}
 
-	w.tasks <- task
+	w.taskQueue <- task
 }
 
 // Done signals the worker to stop working.
 func (w *worker) Done() {
-	w.tasks <- nil
+	w.taskQueue <- nil
 }

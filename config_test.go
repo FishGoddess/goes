@@ -12,18 +12,18 @@ import (
 
 // go test -v -cover -run=^TestNewDefaultConfig$
 func TestNewDefaultConfig(t *testing.T) {
-	size := 16
-	conf := newDefaultConfig(size)
+	workerNum := 16
+	conf := newDefaultConfig(workerNum)
 
-	if conf.size != size {
-		t.Fatalf("conf.size %d != size %d", conf.size, size)
+	if conf.workerNum != workerNum {
+		t.Fatalf("conf.workerNum %d != workerNum %d", conf.workerNum, workerNum)
 	}
 }
 
 // go test -v -cover -run=^TestConfigRecover$
 func TestConfigRecover(t *testing.T) {
-	size := 16
-	conf := newDefaultConfig(size)
+	workerNum := 16
+	conf := newDefaultConfig(workerNum)
 	conf.recover(0)
 
 	got := 0
@@ -41,8 +41,8 @@ func TestConfigRecover(t *testing.T) {
 
 // go test -v -cover -run=^TestConfigNewLocker$
 func TestConfigNewLocker(t *testing.T) {
-	size := 16
-	conf := newDefaultConfig(size)
+	workerNum := 16
+	conf := newDefaultConfig(workerNum)
 	conf.newLocker()
 
 	want := &sync.Mutex{}

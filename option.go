@@ -13,10 +13,10 @@ func (o Option) applyTo(conf *config) {
 	o(conf)
 }
 
-// WithQueueSize sets the queue size of worker.
-func WithQueueSize(size int) Option {
+// WithWorkerQueueSize sets the queue size of worker.
+func WithWorkerQueueSize(size int) Option {
 	return func(conf *config) {
-		conf.queueSize = size
+		conf.workerQueueSize = size
 	}
 }
 

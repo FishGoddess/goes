@@ -14,9 +14,10 @@ import (
 )
 
 const (
-	limit    = 256
-	size     = 256
-	timeLoop = 100_0000
+	limit     = 256
+	workerNum = limit
+	size      = limit
+	timeLoop  = 100_0000
 )
 
 func bench(num *uint32) {
@@ -62,9 +63,9 @@ func BenchmarkLimiterTime(b *testing.B) {
 	b.Logf("num is %d, cost is %s", num, cost)
 }
 
-// go test -v -run=none -bench=^BenchmarkPool$ -benchmem -benchtime=1s
-func BenchmarkPool(b *testing.B) {
-	pool := goes.NewPool(size)
+// go test -v -run=none -bench=^BenchmarkExecutor$ -benchmem -benchtime=1s
+func BenchmarkExecutor(b *testing.B) {
+	executor := goes.NewExecutor(workerNum)
 
 	num := uint32(0)
 	task := func() {
@@ -73,17 +74,17 @@ func BenchmarkPool(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			pool.Submit(task)
+			executor.Submit(task)
 		}
 	})
 
-	pool.Close()
+	executor.Close()
 	b.Logf("num is %d", num)
 }
 
-// go test -v -run=none -bench=^BenchmarkPoolTime$ -benchmem -benchtime=1s
-func BenchmarkPoolTime(b *testing.B) {
-	pool := goes.NewPool(size)
+// go test -v -run=none -bench=^BenchmarkExecutorTime$ -benchmem -benchtime=1s
+func BenchmarkExecutorTime(b *testing.B) {
+	executor := goes.NewExecutor(size)
 
 	num := uint32(0)
 	task := func() {
@@ -92,10 +93,10 @@ func BenchmarkPoolTime(b *testing.B) {
 
 	beginTime := time.Now()
 	for range timeLoop {
-		pool.Submit(task)
+		executor.Submit(task)
 	}
 
-	pool.Close()
+	executor.Close()
 
 	cost := time.Since(beginTime)
 	b.Logf("num is %d, cost is %s", num, cost)

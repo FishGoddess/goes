@@ -11,18 +11,18 @@ import (
 )
 
 type config struct {
-	size          int
-	queueSize     int
-	recoverFunc   func(r any)
-	newLockerFunc func() sync.Locker
+	workerNum       int
+	workerQueueSize int
+	recoverFunc     func(r any)
+	newLockerFunc   func() sync.Locker
 }
 
-func newDefaultConfig(size int) *config {
+func newDefaultConfig(workerNum int) *config {
 	return &config{
-		size:          size,
-		queueSize:     64,
-		recoverFunc:   nil,
-		newLockerFunc: nil,
+		workerNum:       workerNum,
+		workerQueueSize: 64,
+		recoverFunc:     nil,
+		newLockerFunc:   nil,
 	}
 }
 

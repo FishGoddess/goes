@@ -5,14 +5,15 @@
 [![Coverage](_icons/coverage.svg)](./_icons/coverage.svg)
 ![Test](https://github.com/FishGoddess/goes/actions/workflows/test.yml/badge.svg)
 
-**Goes** is a easy-to-use and lightweight lib for limiting goroutines.
+**Goes** is a easy-to-use and lightweight lib for executing async tasks.
 
 [阅读中文版的文档](./README.md)
 
 ### 🥇 Features
 
-* Spin lock with backoff strategy.
-* Limiter only limits the number of simultaneous goroutines, not reuses goroutines.
+* Supports spin lock with backoff strategy.
+* Limits the number of simultaneous goroutines and not reuses them by Limiter.
+* Limits the number of simultaneous goroutines and reuses them by Executor.
 
 _Check [HISTORY.md](./HISTORY.md) and [FUTURE.md](./FUTURE.md) to know about more information._
 
@@ -33,16 +34,28 @@ import (
 )
 
 func main() {
+	// Limits the number of simultaneous goroutines and not reuses them.
 	limiter := goes.NewLimiter(4)
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 20; i++ {
 		limiter.Go(func() {
-			fmt.Println(time.Now())
-			time.Sleep(100 * time.Millisecond)
+			fmt.Println("limiter --> ", time.Now())
+			time.Sleep(time.Second)
 		})
 	}
 
 	limiter.Wait()
+
+	// Limits the number of simultaneous goroutines and reuses them.
+	executor := goes.NewExecutor(4)
+	defer executor.Close()
+
+	for i := 0; i < 20; i++ {
+		executor.Submit(func() {
+			fmt.Println("executor --> ", time.Now())
+			time.Sleep(time.Second)
+		})
+	}
 }
 ```
 
@@ -60,15 +73,15 @@ goarch: amd64
 cpu: AMD EPYC 7K62 48-Core Processor
 
 BenchmarkLimiter-2               2417040               498.5 ns/op            24 B/op          1 allocs/op
-BenchmarkPool-2                 23793781                49.9 ns/op             0 B/op          0 allocs/op
+BenchmarkExecutor-2             23793781                49.9 ns/op             0 B/op          0 allocs/op
 BenchmarkAntsPool-2              4295964               271.7 ns/op             0 B/op          0 allocs/op
 
 BenchmarkLimiterTime-2:  num is 1000000, cost is 300.936441ms
-BenchmarkPoolTime-2:     num is 1000000, cost is  51.350509ms
+BenchmarkExecutorTime-2: num is 1000000, cost is  51.350509ms
 BenchmarkAntsPoolTime-2: num is  999744, cost is 346.972287ms
 ```
 
-> Obviously, goes.Pool is 5x faster than ants.Pool which has more features, so try goes if you prefer a lightweight and faster pool.
+> Obviously, goes.Executor is 5x faster than ants.Pool which has more features, so try goes if you prefer a lightweight and faster executor.
 
 > Benchmarks: [_examples/performance_test.go](./_examples/performance_test.go).
 

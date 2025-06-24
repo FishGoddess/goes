@@ -12,14 +12,26 @@ import (
 )
 
 func main() {
+	// Limits the number of simultaneous goroutines and not reuses them.
 	limiter := goes.NewLimiter(4)
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 20; i++ {
 		limiter.Go(func() {
-			fmt.Println(time.Now())
-			time.Sleep(100 * time.Millisecond)
+			fmt.Println("limiter --> ", time.Now())
+			time.Sleep(time.Second)
 		})
 	}
 
 	limiter.Wait()
+
+	// Limits the number of simultaneous goroutines and reuses them.
+	executor := goes.NewExecutor(4)
+	defer executor.Close()
+
+	for i := 0; i < 20; i++ {
+		executor.Submit(func() {
+			fmt.Println("executor --> ", time.Now())
+			time.Sleep(time.Second)
+		})
+	}
 }

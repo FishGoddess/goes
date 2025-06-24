@@ -10,23 +10,23 @@ import (
 	"testing"
 )
 
-// go test -v -cover -run=^TestWithQueueSize$
-func TestWithQueueSize(t *testing.T) {
-	size := 16
-	queueSize := 256
-	conf := newDefaultConfig(size)
-	WithQueueSize(queueSize)(conf)
+// go test -v -cover -run=^TestWithWorkerQueueSize$
+func TestWithWorkerQueueSize(t *testing.T) {
+	workerNum := 16
+	workerQueueSize := 256
+	conf := newDefaultConfig(workerNum)
+	WithWorkerQueueSize(workerQueueSize)(conf)
 
-	if conf.queueSize != queueSize {
-		t.Fatalf("conf.queueSize %d != queueSize %d", conf.queueSize, queueSize)
+	if conf.workerQueueSize != workerQueueSize {
+		t.Fatalf("conf.workerQueueSize %d != workerQueueSize %d", conf.workerQueueSize, workerQueueSize)
 	}
 }
 
 // go test -v -cover -run=^TestWithRecoverFunc$
 func TestWithRecoverFunc(t *testing.T) {
-	size := 16
+	workerNum := 16
 	recoverFunc := func(r any) {}
-	conf := newDefaultConfig(size)
+	conf := newDefaultConfig(workerNum)
 	WithRecoverFunc(recoverFunc)(conf)
 
 	if fmt.Sprintf("%p", conf.recoverFunc) != fmt.Sprintf("%p", recoverFunc) {
@@ -36,9 +36,9 @@ func TestWithRecoverFunc(t *testing.T) {
 
 // go test -v -cover -run=^TestWithNewLockerFunc$
 func TestWithNewLockerFunc(t *testing.T) {
-	size := 16
+	workerNum := 16
 	newLockerFunc := func() sync.Locker { return nil }
-	conf := newDefaultConfig(size)
+	conf := newDefaultConfig(workerNum)
 	WithNewLockerFunc(newLockerFunc)(conf)
 
 	if fmt.Sprintf("%p", conf.newLockerFunc) != fmt.Sprintf("%p", newLockerFunc) {

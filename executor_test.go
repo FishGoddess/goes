@@ -10,18 +10,17 @@ import (
 	"time"
 )
 
-// go test -v -cover -run=^TestPool$
-func TestPool(t *testing.T) {
-	size := 16
-	queueSize := 1024
-	pool := NewPool(size, WithQueueSize(queueSize))
+// go test -v -cover -run=^TestExecutor$
+func TestExecutor(t *testing.T) {
+	workerNum := 16
+	executor := NewExecutor(workerNum)
 
 	var countMap = make(map[int64]int, 16)
 	var lock sync.Mutex
 
-	totalCount := 10 * size
+	totalCount := 10 * workerNum
 	for i := 0; i < totalCount; i++ {
-		pool.Submit(func() {
+		executor.Submit(func() {
 			now := time.Now().UnixMilli() / 10
 
 			lock.Lock()
@@ -32,15 +31,15 @@ func TestPool(t *testing.T) {
 		})
 	}
 
-	pool.Close()
-	pool.Wait()
+	executor.Close()
+	executor.Wait()
 
 	gotTotalCount := 0
 	for now, count := range countMap {
 		gotTotalCount = gotTotalCount + count
 
-		if count != size {
-			t.Fatalf("now %d: count %d != size %d", now, count, size)
+		if count != workerNum {
+			t.Fatalf("now %d: count %d != workerNum %d", now, count, workerNum)
 		}
 	}
 
