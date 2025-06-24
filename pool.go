@@ -6,8 +6,6 @@ package goes
 
 import (
 	"sync"
-
-	"github.com/FishGoddess/goes/pkg/spinlock"
 )
 
 type Pool struct {
@@ -40,7 +38,7 @@ func NewPool(size int, opts ...Option) *Pool {
 		workers: make([]*worker, 0, size),
 		index:   0,
 		closed:  false,
-		lock:    spinlock.New(),
+		lock:    conf.newLocker(),
 	}
 
 	for range size {

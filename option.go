@@ -4,6 +4,8 @@
 
 package goes
 
+import "sync"
+
 // Option is for setting config.
 type Option func(conf *config)
 
@@ -18,9 +20,16 @@ func WithQueueSize(size int) Option {
 	}
 }
 
-// WithRecoverFunc sets the recover function of worker.
+// WithRecoverFunc sets the recover function.
 func WithRecoverFunc(f func(r any)) Option {
 	return func(conf *config) {
 		conf.recoverFunc = f
+	}
+}
+
+// WithNewLockerFunc sets the new locker function.
+func WithNewLockerFunc(f func() sync.Locker) Option {
+	return func(conf *config) {
+		conf.newLockerFunc = f
 	}
 }

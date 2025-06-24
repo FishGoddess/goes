@@ -6,6 +6,7 @@ package goes
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 )
 
@@ -30,5 +31,17 @@ func TestWithRecoverFunc(t *testing.T) {
 
 	if fmt.Sprintf("%p", conf.recoverFunc) != fmt.Sprintf("%p", recoverFunc) {
 		t.Fatalf("conf.recoverFunc %p != recoverFunc %p", conf.recoverFunc, recoverFunc)
+	}
+}
+
+// go test -v -cover -run=^TestWithNewLockerFunc$
+func TestWithNewLockerFunc(t *testing.T) {
+	size := 16
+	newLockerFunc := func() sync.Locker { return nil }
+	conf := newDefaultConfig(size)
+	WithNewLockerFunc(newLockerFunc)(conf)
+
+	if fmt.Sprintf("%p", conf.newLockerFunc) != fmt.Sprintf("%p", newLockerFunc) {
+		t.Fatalf("conf.newLockerFunc %p != newLockerFunc %p", conf.newLockerFunc, newLockerFunc)
 	}
 }

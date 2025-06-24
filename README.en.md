@@ -18,7 +18,9 @@ _Check [HISTORY.md](./HISTORY.md) and [FUTURE.md](./FUTURE.md) to know about mor
 
 ### 🚀 How to use
 
+```bash
 $ go get -u github.com/FishGoddess/goes
+```
 
 ```go
 package main
@@ -46,7 +48,7 @@ func main() {
 
 _Check more examples in [_examples](./_examples)._
 
-### 🗡️ Benchmarks
+### 🔨 Benchmarks
 
 ```bash
 $ make bench
@@ -66,7 +68,7 @@ BenchmarkPoolTime-2:     num is 1000000, cost is  51.350509ms
 BenchmarkAntsPoolTime-2: num is  999744, cost is 346.972287ms
 ```
 
-> As you can see, goes.Pool is 5x faster than ants.Pool which has more features, so try goes if you want better performance and less features.
+> Obviously, goes.Pool is 5x faster than ants.Pool which has more features, so try goes if you prefer a lightweight and faster pool.
 
 > Benchmarks: [_examples/performance_test.go](./_examples/performance_test.go).
 

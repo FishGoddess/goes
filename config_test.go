@@ -4,7 +4,11 @@
 
 package goes
 
-import "testing"
+import (
+	"fmt"
+	"sync"
+	"testing"
+)
 
 // go test -v -cover -run=^TestNewDefaultConfig$
 func TestNewDefaultConfig(t *testing.T) {
@@ -32,5 +36,23 @@ func TestConfigRecover(t *testing.T) {
 
 	if got != want {
 		t.Fatalf("got %d != want %d", got, want)
+	}
+}
+
+// go test -v -cover -run=^TestConfigNewLocker$
+func TestConfigNewLocker(t *testing.T) {
+	size := 16
+	conf := newDefaultConfig(size)
+	conf.newLocker()
+
+	want := &sync.Mutex{}
+	conf.newLockerFunc = func() sync.Locker {
+		return want
+	}
+
+	got := conf.newLocker()
+
+	if fmt.Sprintf("%p", got) != fmt.Sprintf("%p", want) {
+		t.Fatalf("got %p != want %p", got, want)
 	}
 }
