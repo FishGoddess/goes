@@ -1,4 +1,4 @@
-// Copyright 2023 FishGoddess. All rights reserved.
+// Copyright 2025 FishGoddess. All rights reserved.
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -10,17 +10,17 @@ import (
 	"time"
 )
 
-// go test -v -cover -run=^TestLimiter$
-func TestLimiter(t *testing.T) {
-	limit := 16
-	limiter := NewLimiter(limit)
+// go test -v -cover -run=^TestExecutor$
+func TestExecutor(t *testing.T) {
+	workerNum := 16
+	executor := NewExecutor(workerNum)
 
 	var countMap = make(map[int64]int, 16)
 	var lock sync.Mutex
 
-	totalCount := 10 * limit
+	totalCount := 10 * workerNum
 	for i := 0; i < totalCount; i++ {
-		limiter.Go(func() {
+		executor.Submit(func() {
 			now := time.Now().UnixMilli() / 10
 
 			lock.Lock()
@@ -31,14 +31,15 @@ func TestLimiter(t *testing.T) {
 		})
 	}
 
-	limiter.Wait()
+	executor.Close()
+	executor.Wait()
 
 	gotTotalCount := 0
 	for now, count := range countMap {
 		gotTotalCount = gotTotalCount + count
 
-		if count != limit {
-			t.Fatalf("now %d: count %d != limit %d", now, count, limit)
+		if count != workerNum {
+			t.Fatalf("now %d: count %d != workerNum %d", now, count, workerNum)
 		}
 	}
 
