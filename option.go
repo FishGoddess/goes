@@ -4,20 +4,6 @@
 
 package goes
 
-type config struct {
-	size        int
-	queueSize   int
-	recoverFunc func(r any)
-}
-
-func newDefaultConfig(size int) *config {
-	return &config{
-		size:        size,
-		queueSize:   64,
-		recoverFunc: nil,
-	}
-}
-
 // Option is for setting config.
 type Option func(conf *config)
 

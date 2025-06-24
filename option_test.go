@@ -9,16 +9,6 @@ import (
 	"testing"
 )
 
-// go test -v -cover -run=^TestNewDefaultConfig$
-func TestNewDefaultConfig(t *testing.T) {
-	size := 16
-	conf := newDefaultConfig(size)
-
-	if conf.size != size {
-		t.Fatalf("conf.size %d != size %d", conf.size, size)
-	}
-}
-
 // go test -v -cover -run=^TestWithQueueSize$
 func TestWithQueueSize(t *testing.T) {
 	size := 16

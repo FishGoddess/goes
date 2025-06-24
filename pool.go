@@ -62,9 +62,7 @@ func (p *Pool) Submit(task func()) {
 	worker := p.workers[p.index]
 	worker.Accept(task)
 
-	p.index++
-
-	if p.index >= len(p.workers) {
+	if p.index++; p.index >= len(p.workers) {
 		p.index = 0
 	}
 }

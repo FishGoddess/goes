@@ -10,27 +10,19 @@ type worker struct {
 }
 
 func newWorker(pool *Pool) *worker {
-	w := &worker{
-		pool:  pool,
-		tasks: make(chan func(), pool.conf.queueSize),
-	}
+	tasks := make(chan func(), pool.conf.queueSize)
 
+	w := &worker{pool: pool, tasks: tasks}
 	w.work()
 	return w
 }
 
 func (w *worker) handle(task func()) {
-	if task == nil {
-		return
-	}
-
-	if w.pool.conf.recoverFunc != nil {
-		defer func() {
-			if r := recover(); r != nil {
-				w.pool.conf.recoverFunc(r)
-			}
-		}()
-	}
+	defer func() {
+		if r := recover(); r != nil {
+			w.pool.conf.recover(r)
+		}
+	}()
 
 	task()
 }
@@ -52,6 +44,7 @@ func (w *worker) work() {
 	}()
 }
 
+// Accept accepts a task to be handled.
 func (w *worker) Accept(task func()) {
 	if task == nil {
 		return
@@ -60,6 +53,7 @@ func (w *worker) Accept(task func()) {
 	w.tasks <- task
 }
 
+// Done signals the worker to stop working.
 func (w *worker) Done() {
 	w.tasks <- nil
 }
