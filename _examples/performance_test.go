@@ -15,7 +15,7 @@ import (
 
 const (
 	limit    = 256
-	size     = limit
+	size     = 256
 	timeLoop = 100_0000
 )
 
@@ -64,8 +64,7 @@ func BenchmarkLimiterTime(b *testing.B) {
 
 // go test -v -run=none -bench=^BenchmarkPool$ -benchmem -benchtime=1s
 func BenchmarkPool(b *testing.B) {
-	workerLimit := 1024
-	pool := goes.NewPool(size, workerLimit)
+	pool := goes.NewPool(size)
 
 	num := uint32(0)
 	task := func() {
@@ -84,8 +83,7 @@ func BenchmarkPool(b *testing.B) {
 
 // go test -v -run=none -bench=^BenchmarkPoolTime$ -benchmem -benchtime=1s
 func BenchmarkPoolTime(b *testing.B) {
-	workerLimit := 1024
-	pool := goes.NewPool(size, workerLimit)
+	pool := goes.NewPool(size)
 
 	num := uint32(0)
 	task := func() {

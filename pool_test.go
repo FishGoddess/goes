@@ -13,8 +13,8 @@ import (
 // go test -v -cover -run=^TestPool$
 func TestPool(t *testing.T) {
 	size := 16
-	workerLimit := 1024
-	pool := NewPool(size, workerLimit)
+	queueSize := 1024
+	pool := NewPool(size, WithQueueSize(queueSize))
 
 	var countMap = make(map[int64]int, 16)
 	var lock sync.Mutex

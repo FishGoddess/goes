@@ -9,14 +9,10 @@ type worker struct {
 	tasks chan func()
 }
 
-func newWorker(pool *Pool, limit int) *worker {
-	if limit <= 0 {
-		panic("goes: worker limit <= 0")
-	}
-
+func newWorker(pool *Pool) *worker {
 	w := &worker{
 		pool:  pool,
-		tasks: make(chan func(), limit),
+		tasks: make(chan func(), pool.conf.queueSize),
 	}
 
 	w.work()
@@ -28,11 +24,13 @@ func (w *worker) handle(task func()) {
 		return
 	}
 
-	defer func() {
-		if r := recover(); r != nil {
-			panic(r) // TODO recover from panic
-		}
-	}()
+	if w.pool.conf.recoverFunc != nil {
+		defer func() {
+			if r := recover(); r != nil {
+				w.pool.conf.recoverFunc(r)
+			}
+		}()
+	}
 
 	task()
 }

@@ -11,6 +11,8 @@ import (
 )
 
 type Pool struct {
+	conf *config
+
 	workers []*worker
 	index   int
 	closed  bool
@@ -19,12 +21,22 @@ type Pool struct {
 	lock sync.Locker
 }
 
-func NewPool(size int, workerLimit int) *Pool {
-	if size <= 0 {
+func NewPool(size int, opts ...Option) *Pool {
+	conf := newDefaultConfig(size)
+	for _, opt := range opts {
+		opt.applyTo(conf)
+	}
+
+	if conf.size <= 0 {
 		panic("goes: pool size <= 0")
 	}
 
+	if conf.queueSize <= 0 {
+		panic("goes: worker queue size <= 0")
+	}
+
 	pool := &Pool{
+		conf:    conf,
 		workers: make([]*worker, 0, size),
 		index:   0,
 		closed:  false,
@@ -32,7 +44,7 @@ func NewPool(size int, workerLimit int) *Pool {
 	}
 
 	for range size {
-		worker := newWorker(pool, workerLimit)
+		worker := newWorker(pool)
 		pool.workers = append(pool.workers, worker)
 	}
 
