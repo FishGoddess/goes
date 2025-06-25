@@ -46,7 +46,7 @@ func NewExecutor(workerNum int, opts ...Option) *Executor {
 
 	executor := &Executor{
 		conf:    conf,
-		workers: newRoundRobinWorkers(conf.workerNum),
+		workers: conf.newWorkers(),
 		closed:  false,
 		lock:    conf.newLocker(),
 	}

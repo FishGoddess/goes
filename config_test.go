@@ -56,3 +56,21 @@ func TestConfigNewLocker(t *testing.T) {
 		t.Fatalf("got %p != want %p", got, want)
 	}
 }
+
+// go test -v -cover -run=^TestConfigNewWorkers$
+func TestConfigNewWorkers(t *testing.T) {
+	workerNum := 16
+	conf := newDefaultConfig(workerNum)
+	conf.newWorkers()
+
+	want := &roundRobinWorkers{}
+	conf.newWorkersFunc = func() workers {
+		return want
+	}
+
+	got := conf.newWorkers()
+
+	if fmt.Sprintf("%p", got) != fmt.Sprintf("%p", want) {
+		t.Fatalf("got %p != want %p", got, want)
+	}
+}
