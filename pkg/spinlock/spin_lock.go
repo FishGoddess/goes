@@ -8,15 +8,15 @@ import (
 
 const maxBackoff = 16
 
-type lock uint32
+type Lock uint32
 
 // New creates a new spin lock.
 func New() sync.Locker {
-	return new(lock)
+	return new(Lock)
 }
 
 // Lock locks with the spin lock.
-func (l *lock) Lock() {
+func (l *Lock) Lock() {
 	backoff := 1
 
 	for !atomic.CompareAndSwapUint32((*uint32)(l), 0, 1) {
@@ -31,6 +31,6 @@ func (l *lock) Lock() {
 }
 
 // Unlock unlocks with the spin lock.
-func (l *lock) Unlock() {
+func (l *Lock) Unlock() {
 	atomic.StoreUint32((*uint32)(l), 0)
 }
