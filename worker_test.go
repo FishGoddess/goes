@@ -28,9 +28,9 @@ func TestWorkerHandle(t *testing.T) {
 		t.Fatalf("got %d != want %d", got, want)
 	}
 
+	want = 123
 	worker.handle(func() {
 		got = 123
-		want = 123
 	})
 
 	if got != want {
