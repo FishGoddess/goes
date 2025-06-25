@@ -4,7 +4,16 @@
 
 package goes
 
-type Task = func()
+type workers interface {
+	// Add adds a worker to workers.
+	Add(worker *worker)
+
+	// Next returns the next worker from workers.
+	Next() *worker
+
+	// Done will call done method on all workers.
+	Done()
+}
 
 type worker struct {
 	executor  *Executor
@@ -12,9 +21,11 @@ type worker struct {
 }
 
 func newWorker(executor *Executor) *worker {
-	taskQueue := make(chan Task, executor.conf.workerQueueSize)
+	w := &worker{
+		executor:  executor,
+		taskQueue: make(chan Task, executor.conf.workerQueueSize),
+	}
 
-	w := &worker{executor: executor, taskQueue: taskQueue}
 	w.work()
 	return w
 }

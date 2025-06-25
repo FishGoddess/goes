@@ -5,16 +5,24 @@
 package goes
 
 import (
+	"errors"
 	"sync"
 )
+
+var (
+	ErrExecutorClosed = errors.New("goes: executor is closed")
+	ErrWorkerIsNil    = errors.New("goes: worker is nil")
+)
+
+// Task is a function can be executed by executor.
+type Task = func()
 
 // Executor executes tasks concurrently using limited goroutines.
 // You can specify the number of workers and the queue size of each worker.
 type Executor struct {
 	conf *config
 
-	workers []*worker
-	index   int
+	workers workers
 	closed  bool
 
 	wg   sync.WaitGroup
@@ -38,35 +46,35 @@ func NewExecutor(workerNum int, opts ...Option) *Executor {
 
 	executor := &Executor{
 		conf:    conf,
-		workers: make([]*worker, 0, conf.workerNum),
-		index:   0,
+		workers: newRoundRobinWorkers(conf.workerNum),
 		closed:  false,
 		lock:    conf.newLocker(),
 	}
 
 	for range conf.workerNum {
 		worker := newWorker(executor)
-		executor.workers = append(executor.workers, worker)
+		executor.workers.Add(worker)
 	}
 
 	return executor
 }
 
 // Submit submits a task to be handled by workers.
-func (e *Executor) Submit(task Task) {
+func (e *Executor) Submit(task Task) error {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
 	if e.closed {
-		return
+		return ErrExecutorClosed
 	}
 
-	worker := e.workers[e.index]
+	worker := e.workers.Next()
+	if worker == nil {
+		return ErrWorkerIsNil
+	}
+
 	worker.Accept(task)
-
-	if e.index++; e.index >= len(e.workers) {
-		e.index = 0
-	}
+	return nil
 }
 
 // Wait waits all tasks to be handled.
@@ -79,10 +87,7 @@ func (e *Executor) Close() {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
-	for _, worker := range e.workers {
-		worker.Done()
-	}
-
+	e.workers.Done()
 	e.wg.Wait()
 	e.closed = true
 }
