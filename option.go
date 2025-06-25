@@ -21,15 +21,26 @@ func WithWorkerQueueSize(size int) Option {
 }
 
 // WithRecoverFunc sets the recover function.
-func WithRecoverFunc(f func(r any)) Option {
+func WithRecoverFunc(recoverFunc func(r any)) Option {
 	return func(conf *config) {
-		conf.recoverFunc = f
+		conf.recoverFunc = recoverFunc
 	}
 }
 
 // WithNewLockerFunc sets the new locker function.
-func WithNewLockerFunc(f func() sync.Locker) Option {
+func WithNewLockerFunc(newLockerFunc func() sync.Locker) Option {
 	return func(conf *config) {
-		conf.newLockerFunc = f
+		conf.newLockerFunc = newLockerFunc
+	}
+}
+
+// WithSyncMutex sets the new locker function returns sync.Mutex.
+func WithSyncMutex() Option {
+	newLockerFunc := func() sync.Locker {
+		return new(sync.Mutex)
+	}
+
+	return func(conf *config) {
+		conf.newLockerFunc = newLockerFunc
 	}
 }

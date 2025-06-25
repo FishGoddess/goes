@@ -8,6 +8,8 @@ import (
 	"sync"
 )
 
+// Executor executes tasks concurrently using limited goroutines.
+// You can specify the number of workers and the queue size of each worker.
 type Executor struct {
 	conf *config
 
@@ -19,6 +21,7 @@ type Executor struct {
 	lock sync.Locker
 }
 
+// NewExecutor creates a new executor with given worker number and options.
 func NewExecutor(workerNum int, opts ...Option) *Executor {
 	conf := newDefaultConfig(workerNum)
 	for _, opt := range opts {
@@ -49,7 +52,8 @@ func NewExecutor(workerNum int, opts ...Option) *Executor {
 	return executor
 }
 
-func (e *Executor) Submit(task func()) {
+// Submit submits a task to be handled by workers.
+func (e *Executor) Submit(task Task) {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
@@ -65,10 +69,12 @@ func (e *Executor) Submit(task func()) {
 	}
 }
 
+// Wait waits all tasks to be handled.
 func (e *Executor) Wait() {
 	e.wg.Wait()
 }
 
+// Close closes the executor after handling all tasks.
 func (e *Executor) Close() {
 	e.lock.Lock()
 	defer e.lock.Unlock()

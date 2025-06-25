@@ -45,3 +45,15 @@ func TestWithNewLockerFunc(t *testing.T) {
 		t.Fatalf("conf.newLockerFunc %p != newLockerFunc %p", conf.newLockerFunc, newLockerFunc)
 	}
 }
+
+// go test -v -cover -run=^TestWithSyncMutex$
+func TestWithSyncMutex(t *testing.T) {
+	workerNum := 16
+	conf := newDefaultConfig(workerNum)
+	WithSyncMutex()(conf)
+
+	lock := conf.newLockerFunc()
+	if _, ok := lock.(*sync.Mutex); !ok {
+		t.Fatalf("lock %T is not *sync.Mutex", lock)
+	}
+}
