@@ -19,7 +19,7 @@ func newWorker(executor *Executor) *worker {
 	return w
 }
 
-func (w *worker) handle(task func()) {
+func (w *worker) handle(task Task) {
 	defer func() {
 		if r := recover(); r != nil {
 			w.executor.conf.recover(r)
@@ -33,6 +33,7 @@ func (w *worker) work() {
 	w.executor.wg.Add(1)
 	go func() {
 		defer w.executor.wg.Done()
+		defer close(w.taskQueue)
 
 		for task := range w.taskQueue {
 			if task == nil {
@@ -41,13 +42,11 @@ func (w *worker) work() {
 
 			w.handle(task)
 		}
-
-		close(w.taskQueue)
 	}()
 }
 
 // Accept accepts a task to be handled.
-func (w *worker) Accept(task func()) {
+func (w *worker) Accept(task Task) {
 	if task == nil {
 		return
 	}
