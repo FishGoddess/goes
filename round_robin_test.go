@@ -11,8 +11,11 @@ func TestRoundRobinWorkers(t *testing.T) {
 	workerNum := 16
 	rrWorkers := newRoundRobinWorkers(workerNum)
 
-	testWorkers := make([]*worker, workerNum)
-	for _, worker := range testWorkers {
+	testWorkers := make([]*worker, 0, workerNum)
+	for i := 0; i < workerNum; i++ {
+		worker := new(worker)
+
+		testWorkers = append(testWorkers, worker)
 		rrWorkers.Add(worker)
 	}
 

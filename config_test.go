@@ -57,7 +57,6 @@ func TestConfigNewLocker(t *testing.T) {
 	}
 
 	got = conf.newLocker()
-
 	if fmt.Sprintf("%p", got) != fmt.Sprintf("%p", want) {
 		t.Fatalf("got %p != want %p", got, want)
 	}
@@ -74,13 +73,22 @@ func TestConfigNewWorkers(t *testing.T) {
 	}
 
 	want := &roundRobinWorkers{}
-	conf.newWorkersFunc = func() workers {
+	conf.newWorkersFunc = func(workerNum int) workers {
+		want.workers = make([]*worker, workerNum)
 		return want
 	}
 
 	got = conf.newWorkers()
-
 	if fmt.Sprintf("%p", got) != fmt.Sprintf("%p", want) {
 		t.Fatalf("got %p != want %p", got, want)
+	}
+
+	rrWorkers, ok := got.(*roundRobinWorkers)
+	if !ok {
+		t.Fatalf("got %T is not *roundRobinWorkers", got)
+	}
+
+	if len(rrWorkers.workers) != workerNum {
+		t.Fatalf("len(rrWorkers.workers) %d != workerNum %d", len(rrWorkers.workers), workerNum)
 	}
 }

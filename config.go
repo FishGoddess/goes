@@ -15,7 +15,7 @@ type config struct {
 	workerQueueSize int
 	recoverFunc     func(r any)
 	newLockerFunc   func() sync.Locker
-	newWorkersFunc  func() workers
+	newWorkersFunc  func(workerNum int) workers
 }
 
 func newDefaultConfig(workerNum int) *config {
@@ -47,5 +47,5 @@ func (c *config) newWorkers() workers {
 		return newRoundRobinWorkers(c.workerNum)
 	}
 
-	return c.newWorkersFunc()
+	return c.newWorkersFunc(c.workerNum)
 }

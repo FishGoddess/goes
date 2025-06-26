@@ -59,3 +59,25 @@ func WithSyncMutex() Option {
 		conf.newLockerFunc = newLockerFunc
 	}
 }
+
+// WithRoundRobinWorkers sets the new workers function using round robin strategy.
+func WithRoundRobinWorkers() Option {
+	newWorkersFunc := func(workerNum int) workers {
+		return newRoundRobinWorkers(workerNum)
+	}
+
+	return func(conf *config) {
+		conf.newWorkersFunc = newWorkersFunc
+	}
+}
+
+// WithRandomWorkers sets the new workers function using random strategy.
+func WithRandomWorkers() Option {
+	newWorkersFunc := func(workerNum int) workers {
+		return newRandomWorkers(workerNum)
+	}
+
+	return func(conf *config) {
+		conf.newWorkersFunc = newWorkersFunc
+	}
+}

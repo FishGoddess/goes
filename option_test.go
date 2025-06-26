@@ -71,3 +71,37 @@ func TestWithSyncMutex(t *testing.T) {
 		t.Fatalf("got %T is not *sync.Mutex", got)
 	}
 }
+
+// go test -v -cover -run=^TestWithRoundRobinWorkers$
+func TestWithRoundRobinWorkers(t *testing.T) {
+	workerNum := 16
+	conf := newDefaultConfig(workerNum)
+	WithRoundRobinWorkers()(conf)
+
+	got := conf.newWorkersFunc(workerNum)
+	rrWorkers, ok := got.(*roundRobinWorkers)
+	if !ok {
+		t.Fatalf("got %T is not *roundRobinWorkers", got)
+	}
+
+	if cap(rrWorkers.workers) != workerNum {
+		t.Fatalf("cap(rrWorkers.workers) %d != workerNum %d", cap(rrWorkers.workers), workerNum)
+	}
+}
+
+// go test -v -cover -run=^TestWithRandomWorkers$
+func TestWithRandomWorkers(t *testing.T) {
+	workerNum := 16
+	conf := newDefaultConfig(workerNum)
+	WithRandomWorkers()(conf)
+
+	got := conf.newWorkersFunc(workerNum)
+	rWorkers, ok := got.(*randomWorkers)
+	if !ok {
+		t.Fatalf("got %T is not *randomWorkers", got)
+	}
+
+	if cap(rWorkers.workers) != workerNum {
+		t.Fatalf("cap(rWorkers.workers) %d != workerNum %d", cap(rWorkers.workers), workerNum)
+	}
+}
