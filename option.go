@@ -4,7 +4,11 @@
 
 package goes
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/FishGoddess/goes/pkg/spinlock"
+)
 
 // Option is for setting config.
 type Option func(conf *config)
@@ -34,7 +38,18 @@ func WithNewLockerFunc(newLockerFunc func() sync.Locker) Option {
 	}
 }
 
-// WithSyncMutex sets the new locker function returns sync.Mutex.
+// WithSpinLock sets the new locker function returns spin lock.
+func WithSpinLock() Option {
+	newLockerFunc := func() sync.Locker {
+		return spinlock.New()
+	}
+
+	return func(conf *config) {
+		conf.newLockerFunc = newLockerFunc
+	}
+}
+
+// WithSyncMutex sets the new locker function returns sync mutex.
 func WithSyncMutex() Option {
 	newLockerFunc := func() sync.Locker {
 		return new(sync.Mutex)
@@ -42,5 +57,27 @@ func WithSyncMutex() Option {
 
 	return func(conf *config) {
 		conf.newLockerFunc = newLockerFunc
+	}
+}
+
+// WithRoundRobinWorkers sets the new workers function using round robin strategy.
+func WithRoundRobinWorkers() Option {
+	newWorkersFunc := func(workerNum int) workers {
+		return newRoundRobinWorkers(workerNum)
+	}
+
+	return func(conf *config) {
+		conf.newWorkersFunc = newWorkersFunc
+	}
+}
+
+// WithRandomWorkers sets the new workers function using random strategy.
+func WithRandomWorkers() Option {
+	newWorkersFunc := func(workerNum int) workers {
+		return newRandomWorkers(workerNum)
+	}
+
+	return func(conf *config) {
+		conf.newWorkersFunc = newWorkersFunc
 	}
 }

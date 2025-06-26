@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+
+	"github.com/FishGoddess/goes/pkg/spinlock"
 )
 
 // go test -v -cover -run=^TestWithWorkerQueueSize$
@@ -46,14 +48,60 @@ func TestWithNewLockerFunc(t *testing.T) {
 	}
 }
 
+// go test -v -cover -run=^TestWithSpinLock$
+func TestWithSpinLock(t *testing.T) {
+	workerNum := 16
+	conf := newDefaultConfig(workerNum)
+	WithSpinLock()(conf)
+
+	got := conf.newLockerFunc()
+	if _, ok := got.(*spinlock.Lock); !ok {
+		t.Fatalf("got %T is not *spinlock.Lock", got)
+	}
+}
+
 // go test -v -cover -run=^TestWithSyncMutex$
 func TestWithSyncMutex(t *testing.T) {
 	workerNum := 16
 	conf := newDefaultConfig(workerNum)
 	WithSyncMutex()(conf)
 
-	lock := conf.newLockerFunc()
-	if _, ok := lock.(*sync.Mutex); !ok {
-		t.Fatalf("lock %T is not *sync.Mutex", lock)
+	got := conf.newLockerFunc()
+	if _, ok := got.(*sync.Mutex); !ok {
+		t.Fatalf("got %T is not *sync.Mutex", got)
+	}
+}
+
+// go test -v -cover -run=^TestWithRoundRobinWorkers$
+func TestWithRoundRobinWorkers(t *testing.T) {
+	workerNum := 16
+	conf := newDefaultConfig(workerNum)
+	WithRoundRobinWorkers()(conf)
+
+	got := conf.newWorkersFunc(workerNum)
+	rrWorkers, ok := got.(*roundRobinWorkers)
+	if !ok {
+		t.Fatalf("got %T is not *roundRobinWorkers", got)
+	}
+
+	if cap(rrWorkers.workers) != workerNum {
+		t.Fatalf("cap(rrWorkers.workers) %d != workerNum %d", cap(rrWorkers.workers), workerNum)
+	}
+}
+
+// go test -v -cover -run=^TestWithRandomWorkers$
+func TestWithRandomWorkers(t *testing.T) {
+	workerNum := 16
+	conf := newDefaultConfig(workerNum)
+	WithRandomWorkers()(conf)
+
+	got := conf.newWorkersFunc(workerNum)
+	rWorkers, ok := got.(*randomWorkers)
+	if !ok {
+		t.Fatalf("got %T is not *randomWorkers", got)
+	}
+
+	if cap(rWorkers.workers) != workerNum {
+		t.Fatalf("cap(rWorkers.workers) %d != workerNum %d", cap(rWorkers.workers), workerNum)
 	}
 }

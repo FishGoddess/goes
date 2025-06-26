@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+
+	"github.com/FishGoddess/goes/pkg/spinlock"
 )
 
 // go test -v -cover -run=^TestNewDefaultConfig$
@@ -43,16 +45,50 @@ func TestConfigRecover(t *testing.T) {
 func TestConfigNewLocker(t *testing.T) {
 	workerNum := 16
 	conf := newDefaultConfig(workerNum)
-	conf.newLocker()
+
+	got := conf.newLocker()
+	if _, ok := got.(*spinlock.Lock); !ok {
+		t.Fatalf("got %T is not *spinlock.Lock", got)
+	}
 
 	want := &sync.Mutex{}
 	conf.newLockerFunc = func() sync.Locker {
 		return want
 	}
 
-	got := conf.newLocker()
-
+	got = conf.newLocker()
 	if fmt.Sprintf("%p", got) != fmt.Sprintf("%p", want) {
 		t.Fatalf("got %p != want %p", got, want)
+	}
+}
+
+// go test -v -cover -run=^TestConfigNewWorkers$
+func TestConfigNewWorkers(t *testing.T) {
+	workerNum := 16
+	conf := newDefaultConfig(workerNum)
+
+	got := conf.newWorkers()
+	if _, ok := got.(*roundRobinWorkers); !ok {
+		t.Fatalf("got %T is not *roundRobinWorkers", got)
+	}
+
+	want := &roundRobinWorkers{}
+	conf.newWorkersFunc = func(workerNum int) workers {
+		want.workers = make([]*worker, workerNum)
+		return want
+	}
+
+	got = conf.newWorkers()
+	if fmt.Sprintf("%p", got) != fmt.Sprintf("%p", want) {
+		t.Fatalf("got %p != want %p", got, want)
+	}
+
+	rrWorkers, ok := got.(*roundRobinWorkers)
+	if !ok {
+		t.Fatalf("got %T is not *roundRobinWorkers", got)
+	}
+
+	if len(rrWorkers.workers) != workerNum {
+		t.Fatalf("len(rrWorkers.workers) %d != workerNum %d", len(rrWorkers.workers), workerNum)
 	}
 }

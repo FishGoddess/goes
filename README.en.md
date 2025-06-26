@@ -11,9 +11,10 @@
 
 ### 🥇 Features
 
-* Supports spin lock with backoff strategy.
 * Limits the number of simultaneous goroutines and not reuses them by Limiter.
 * Limits the number of simultaneous goroutines and reuses them by Executor.
+* Supports multiple scheduling strategies, including round robin, random, etc.
+* Supports spin lock with backoff strategy.
 
 _Check [HISTORY.md](./HISTORY.md) and [FUTURE.md](./FUTURE.md) to know about more information._
 

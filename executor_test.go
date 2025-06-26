@@ -47,3 +47,23 @@ func TestExecutor(t *testing.T) {
 		t.Fatalf("gotTotalCount %d != totalCount %d", gotTotalCount, totalCount)
 	}
 }
+
+// go test -v -cover -run=^TestExecutorError$
+func TestExecutorError(t *testing.T) {
+	workerNum := 16
+	executor := NewExecutor(workerNum)
+	executor.Close()
+
+	err := executor.Submit(func() {})
+	if err != ErrExecutorClosed {
+		t.Fatalf("err %v != ErrExecutorClosed %v", err, ErrExecutorClosed)
+	}
+
+	executor = NewExecutor(workerNum)
+	executor.workers = &roundRobinWorkers{}
+
+	err = executor.Submit(func() {})
+	if err != ErrWorkerIsNil {
+		t.Fatalf("err %v != ErrWorkerIsNil %v", err, ErrWorkerIsNil)
+	}
+}

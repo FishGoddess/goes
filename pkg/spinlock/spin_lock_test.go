@@ -9,6 +9,9 @@ import (
 // go test -v -cover -run=^TestSpinLock$
 func TestSpinLock(t *testing.T) {
 	lock := New()
+	if _, ok := lock.(*Lock); !ok {
+		t.Fatalf("lock %T is not *Lock", lock)
+	}
 
 	got := 0
 	want := 10000
@@ -51,6 +54,6 @@ func BenchmarkMutex(b *testing.B) {
 
 // go test -v -run=none -bench=^BenchmarkSpinLock$ -benchmem -benchtime=1s
 func BenchmarkSpinLock(b *testing.B) {
-	spin := New()
-	benchmarkLock(b, spin)
+	var spin Lock
+	benchmarkLock(b, &spin)
 }
