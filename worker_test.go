@@ -36,6 +36,17 @@ func TestWorkerHandle(t *testing.T) {
 	if got != want {
 		t.Fatalf("got %d != want %d", got, want)
 	}
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("worker.handle should panic")
+		}
+	}()
+
+	worker.executor.conf.recoverFunc = nil
+	worker.handle(func() {
+		panic(want)
+	})
 }
 
 // go test -v -cover -run=^TestWorkerWaitingTasks$

@@ -26,11 +26,18 @@ func TestNewDefaultConfig(t *testing.T) {
 func TestConfigRecover(t *testing.T) {
 	workerNum := 16
 	conf := newDefaultConfig(workerNum)
-	conf.recover(0)
+
+	if conf.recoverable() {
+		t.Fatalf("conf.recoverable() is wrong")
+	}
 
 	got := 0
 	conf.recoverFunc = func(r any) {
 		got = r.(int)
+	}
+
+	if !conf.recoverable() {
+		t.Fatalf("conf.recoverable() is wrong")
 	}
 
 	want := 1
@@ -39,6 +46,15 @@ func TestConfigRecover(t *testing.T) {
 	if got != want {
 		t.Fatalf("got %d != want %d", got, want)
 	}
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("conf.recover should panic")
+		}
+	}()
+
+	conf.recoverFunc = nil
+	conf.recover(0)
 }
 
 // go test -v -cover -run=^TestConfigNewLocker$

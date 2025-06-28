@@ -33,11 +33,13 @@ func (w *worker) WaitingTasks() int {
 }
 
 func (w *worker) handle(task Task) {
-	defer func() {
-		if r := recover(); r != nil {
-			w.executor.conf.recover(r)
-		}
-	}()
+	if w.executor.conf.recoverable() {
+		defer func() {
+			if r := recover(); r != nil {
+				w.executor.conf.recover(r)
+			}
+		}()
+	}
 
 	task()
 }

@@ -28,10 +28,12 @@ func newDefaultConfig(workerNum int) *config {
 	}
 }
 
+func (c *config) recoverable() bool {
+	return c.recoverFunc != nil
+}
+
 func (c *config) recover(r any) {
-	if c.recoverFunc != nil {
-		c.recoverFunc(r)
-	}
+	c.recoverFunc(r)
 }
 
 func (c *config) newLocker() sync.Locker {
