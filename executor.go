@@ -102,6 +102,7 @@ func (e *Executor) Submit(task Task) error {
 
 	worker = e.spawnWorker()
 	e.lock.Unlock()
+
 	worker.Accept(task)
 	return nil
 }
@@ -122,4 +123,6 @@ func (e *Executor) Close() {
 
 	e.Wait()
 	e.closed = true
+	e.workers = nil
+	e.scheduler.Set(nil)
 }
