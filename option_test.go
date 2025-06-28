@@ -78,7 +78,7 @@ func TestWithRoundRobinScheduler(t *testing.T) {
 	conf := newDefaultConfig(workerNum)
 	WithRoundRobinScheduler()(conf)
 
-	workers := make([]*worker, workerNum)
+	workers := make([]*worker, 0, workerNum)
 	got := conf.newSchedulerFunc(workers)
 
 	scheduler, ok := got.(*roundRobinScheduler)
@@ -97,7 +97,7 @@ func TestWithRandomScheduler(t *testing.T) {
 	conf := newDefaultConfig(workerNum)
 	WithRandomScheduler()(conf)
 
-	workers := make([]*worker, workerNum)
+	workers := make([]*worker, 0, workerNum)
 	got := conf.newSchedulerFunc(workers)
 
 	scheduler, ok := got.(*randomScheduler)

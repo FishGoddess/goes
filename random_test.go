@@ -4,19 +4,32 @@
 
 package goes
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 // go test -v -cover -run=^TestRandomScheduler$
 func TestRandomScheduler(t *testing.T) {
 	workerNum := 16
 	workers := make([]*worker, 0, workerNum)
-	for i := 0; i < workerNum; i++ {
-		worker := new(worker)
-		workers = append(workers, worker)
+	for range workerNum {
+		workers = append(workers, new(worker))
 	}
 
 	scheduler := newRandomScheduler(workers)
+	if fmt.Sprintf("%p", scheduler.workers) != fmt.Sprintf("%p", workers) {
+		t.Fatalf("scheduler.workers %p != workers %p", scheduler.workers, workers)
+	}
+
+	if len(scheduler.workers) != len(workers) {
+		t.Fatalf("len(scheduler.workers) %d != len(workers) %d", len(scheduler.workers), len(workers))
+	}
+
 	scheduler.Set(workers)
+	if fmt.Sprintf("%p", scheduler.workers) != fmt.Sprintf("%p", workers) {
+		t.Fatalf("scheduler.workers %p != workers %p", scheduler.workers, workers)
+	}
 
 	if len(scheduler.workers) != len(workers) {
 		t.Fatalf("len(scheduler.workers) %d != len(workers) %d", len(scheduler.workers), len(workers))
