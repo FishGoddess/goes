@@ -84,7 +84,7 @@ func BenchmarkExecutor(b *testing.B) {
 
 // go test -v -run=none -bench=^BenchmarkExecutorTime$ -benchmem -benchtime=1s
 func BenchmarkExecutorTime(b *testing.B) {
-	executor := goes.NewExecutor(size)
+	executor := goes.NewExecutor(workerNum)
 
 	num := uint32(0)
 	task := func() {
@@ -104,7 +104,7 @@ func BenchmarkExecutorTime(b *testing.B) {
 
 // // go test -v -run=none -bench=^BenchmarkAntsPool$ -benchmem -benchtime=1s
 // func BenchmarkAntsPool(b *testing.B) {
-// 	pool, _ := ants.NewPool(size)
+// 	pool, _ := ants.NewPool(workerNum)
 //
 // 	num := uint32(0)
 // 	task := func() {
@@ -123,7 +123,7 @@ func BenchmarkExecutorTime(b *testing.B) {
 //
 // // go test -v -run=none -bench=^BenchmarkAntsPoolTime$ -benchmem -benchtime=1s
 // func BenchmarkAntsPoolTime(b *testing.B) {
-// 	pool, _ := ants.NewPool(size)
+// 	pool, _ := ants.NewPool(workerNum)
 //
 // 	num := uint32(0)
 // 	task := func() {

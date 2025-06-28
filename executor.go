@@ -77,30 +77,31 @@ func (e *Executor) AvailableWorkers() int {
 // Submit submits a task to be handled by workers.
 func (e *Executor) Submit(task Task) error {
 	e.lock.Lock()
-	defer e.lock.Unlock()
 
 	if e.closed {
+		e.lock.Unlock()
+
 		return ErrExecutorIsClosed
 	}
 
 	worker := e.scheduler.Get()
 	if worker == nil {
+		e.lock.Unlock()
+
 		return ErrWorkerIsNil
 	}
 
-	// We don't need to create a new worker if we got a worker with no tasks.
+	// 1. We don't need to create a new worker if we got a worker with no tasks.
+	// 2. The number of workers has reached the limit, so we can only use the worker we got.
 	if worker.WaitingTasks() <= 0 || len(e.workers) >= e.conf.workerNum {
-		worker.Accept(task)
-		return nil
-	}
+		e.lock.Unlock()
 
-	// The number of workers has reached the limit, so we can only use the worker we got.
-	if len(e.workers) >= e.conf.workerNum {
 		worker.Accept(task)
 		return nil
 	}
 
 	worker = e.spawnWorker()
+	e.lock.Unlock()
 	worker.Accept(task)
 	return nil
 }
