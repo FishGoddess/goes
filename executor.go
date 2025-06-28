@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	ErrExecutorClosed = errors.New("goes: executor is closed")
-	ErrWorkerIsNil    = errors.New("goes: worker is nil")
+	ErrExecutorIsClosed = errors.New("goes: executor is closed")
+	ErrWorkerIsNil      = errors.New("goes: worker is nil")
 )
 
 // Task is a function can be executed by executor.
@@ -62,13 +62,21 @@ func NewExecutor(workerNum int, opts ...Option) *Executor {
 	return executor
 }
 
+// WorkerNum returns the number of workers in the executor.
+func (e *Executor) WorkerNum() int {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+
+	return len(e.workers)
+}
+
 // Submit submits a task to be handled by workers.
 func (e *Executor) Submit(task Task) error {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
 	if e.closed {
-		return ErrExecutorClosed
+		return ErrExecutorIsClosed
 	}
 
 	worker := e.scheduler.Get()

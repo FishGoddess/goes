@@ -55,8 +55,8 @@ func TestExecutorError(t *testing.T) {
 	executor.Close()
 
 	err := executor.Submit(func() {})
-	if err != ErrExecutorClosed {
-		t.Fatalf("err %v != ErrExecutorClosed %v", err, ErrExecutorClosed)
+	if err != ErrExecutorIsClosed {
+		t.Fatalf("err %v != ErrExecutorIsClosed %v", err, ErrExecutorIsClosed)
 	}
 
 	executor = NewExecutor(workerNum)
@@ -65,5 +65,18 @@ func TestExecutorError(t *testing.T) {
 	err = executor.Submit(func() {})
 	if err != ErrWorkerIsNil {
 		t.Fatalf("err %v != ErrWorkerIsNil %v", err, ErrWorkerIsNil)
+	}
+}
+
+// go test -v -cover -run=^TestExecutorWorkerNum$
+func TestExecutorWorkerNum(t *testing.T) {
+	workerNum := 16
+	workers := make([]*worker, workerNum)
+
+	executor := NewExecutor(workerNum)
+	executor.workers = workers
+
+	if executor.WorkerNum() != workerNum {
+		t.Fatalf("executor.WorkerNum() %d != workerNum %d", executor.WorkerNum(), workerNum)
 	}
 }
