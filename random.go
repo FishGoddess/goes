@@ -14,7 +14,7 @@ type randomScheduler struct {
 	random  *rand.Rand
 }
 
-func newRandomScheduler(workers []*worker) *randomScheduler {
+func newRandomScheduler(workers ...*worker) *randomScheduler {
 	scheduler := &randomScheduler{
 		workers: workers,
 		random:  rand.New(rand.NewSource(time.Now().Unix())),

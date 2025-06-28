@@ -68,19 +68,19 @@ func TestConfigNewScheduler(t *testing.T) {
 	conf := newDefaultConfig(workerNum)
 
 	workers := make([]*worker, workerNum)
-	got := conf.newScheduler(workers)
+	got := conf.newScheduler(workers...)
 
 	if _, ok := got.(*roundRobinScheduler); !ok {
 		t.Fatalf("got %T is not *roundRobinScheduler", got)
 	}
 
 	want := &roundRobinScheduler{}
-	conf.newSchedulerFunc = func(workers []*worker) scheduler {
+	conf.newSchedulerFunc = func(workers ...*worker) scheduler {
 		want.workers = workers
 		return want
 	}
 
-	got = conf.newScheduler(workers)
+	got = conf.newScheduler(workers...)
 	if fmt.Sprintf("%p", got) != fmt.Sprintf("%p", want) {
 		t.Fatalf("got %p != want %p", got, want)
 	}

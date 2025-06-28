@@ -75,11 +75,11 @@ goarch: amd64
 cpu: AMD EPYC 7K62 48-Core Processor
 
 BenchmarkLimiter-2               2417040               498.5 ns/op            24 B/op          1 allocs/op
-BenchmarkExecutor-2             23793781                49.9 ns/op             0 B/op          0 allocs/op
+BenchmarkExecutor-2             20458502                58.3 ns/op             0 B/op          0 allocs/op
 BenchmarkAntsPool-2              4295964               271.7 ns/op             0 B/op          0 allocs/op
 
 BenchmarkLimiterTime-2:  num is 1000000, cost is 300.936441ms
-BenchmarkExecutorTime-2: num is 1000000, cost is  51.350509ms
+BenchmarkExecutorTime-2: num is 1000000, cost is  63.026947ms
 BenchmarkAntsPoolTime-2: num is  999744, cost is 346.972287ms
 ```
 

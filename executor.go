@@ -45,21 +45,25 @@ func NewExecutor(workerNum int, opts ...Option) *Executor {
 		panic("goes: worker's queue size <= 0")
 	}
 
-	executor := &Executor{
-		conf:   conf,
-		closed: false,
-		lock:   conf.newLocker(),
-	}
-
 	workers := make([]*worker, 0, conf.workerNum)
-	for range conf.workerNum {
-		worker := newWorker(executor)
-		workers = append(workers, worker)
+	executor := &Executor{
+		conf:      conf,
+		workers:   workers,
+		scheduler: conf.newScheduler(),
+		closed:    false,
+		lock:      conf.newLocker(),
 	}
 
-	executor.workers = workers
-	executor.scheduler = conf.newScheduler(workers)
+	executor.spawnWorker()
 	return executor
+}
+
+func (e *Executor) spawnWorker() *worker {
+	worker := newWorker(e)
+
+	e.workers = append(e.workers, worker)
+	e.scheduler.Set(e.workers)
+	return worker
 }
 
 // AvailableWorkers returns the number of workers available in the executor.
@@ -84,6 +88,19 @@ func (e *Executor) Submit(task Task) error {
 		return ErrWorkerIsNil
 	}
 
+	// We don't need to create a new worker if we got a worker with no tasks.
+	if worker.WaitingTasks() <= 0 || len(e.workers) >= e.conf.workerNum {
+		worker.Accept(task)
+		return nil
+	}
+
+	// The number of workers has reached the limit, so we can only use the worker we got.
+	if len(e.workers) >= e.conf.workerNum {
+		worker.Accept(task)
+		return nil
+	}
+
+	worker = e.spawnWorker()
 	worker.Accept(task)
 	return nil
 }

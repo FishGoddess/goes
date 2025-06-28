@@ -17,7 +17,7 @@ func TestRoundRobinScheduler(t *testing.T) {
 		workers = append(workers, new(worker))
 	}
 
-	scheduler := newRoundRobinScheduler(workers)
+	scheduler := newRoundRobinScheduler(workers...)
 	if fmt.Sprintf("%p", scheduler.workers) != fmt.Sprintf("%p", workers) {
 		t.Fatalf("scheduler.workers %p != workers %p", scheduler.workers, workers)
 	}
