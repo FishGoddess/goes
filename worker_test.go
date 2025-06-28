@@ -4,7 +4,10 @@
 
 package goes
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 // go test -v -cover -run=^TestWorkerHandle$
 func TestWorkerHandle(t *testing.T) {
@@ -54,22 +57,52 @@ func TestWorkerWaitingTasks(t *testing.T) {
 	taskQueue := make(chan Task, 4)
 	worker := &worker{taskQueue: taskQueue}
 
-	if worker.WaitingTasks() != len(taskQueue) {
-		t.Fatalf("got %d != want %d", worker.WaitingTasks(), len(taskQueue))
+	got := worker.WaitingTasks()
+	want := len(taskQueue)
+	if got != want {
+		t.Fatalf("got %d != want %d", got, want)
 	}
 
-	if worker.WaitingTasks() != 0 {
-		t.Fatalf("got %d != 0", worker.WaitingTasks())
+	got = worker.WaitingTasks()
+	if got != 0 {
+		t.Fatalf("got %d != 0", got)
 	}
 
 	taskQueue <- nil
 	taskQueue <- nil
 
-	if worker.WaitingTasks() != len(taskQueue) {
-		t.Fatalf("got %d != want %d", worker.WaitingTasks(), len(taskQueue))
+	got = worker.WaitingTasks()
+	want = len(taskQueue)
+	if got != want {
+		t.Fatalf("got %d != want %d", got, want)
 	}
 
-	if worker.WaitingTasks() != 2 {
-		t.Fatalf("got %d != 2", worker.WaitingTasks())
+	got = worker.WaitingTasks()
+	if got != 2 {
+		t.Fatalf("got %d != 2", got)
+	}
+}
+
+// go test -v -cover -run=^TestWorkerAcceptTime$
+func TestWorkerAcceptTime(t *testing.T) {
+	acceptTime := time.Now()
+	worker := &worker{acceptTime: acceptTime}
+
+	got := worker.AcceptTime()
+	if got != acceptTime {
+		t.Fatalf("got %v != acceptTime %v", got, acceptTime)
+	}
+
+	acceptTime = time.Unix(123456789, 0)
+	worker.SetAcceptTime(acceptTime)
+
+	got = worker.acceptTime
+	if got != acceptTime {
+		t.Fatalf("got %v != acceptTime %v", got, acceptTime)
+	}
+
+	got = worker.AcceptTime()
+	if got != acceptTime {
+		t.Fatalf("got %v != acceptTime %v", got, acceptTime)
 	}
 }

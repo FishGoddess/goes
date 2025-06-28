@@ -86,8 +86,9 @@ func TestWithRoundRobinScheduler(t *testing.T) {
 		t.Fatalf("got %T is not *roundRobinScheduler", got)
 	}
 
-	if cap(scheduler.workers) != workerNum {
-		t.Fatalf("cap(scheduler.workers) %d != workerNum %d", cap(scheduler.workers), workerNum)
+	gotCap := cap(scheduler.workers)
+	if gotCap != workerNum {
+		t.Fatalf("gotCap %d != workerNum %d", gotCap, workerNum)
 	}
 }
 
@@ -105,7 +106,8 @@ func TestWithRandomScheduler(t *testing.T) {
 		t.Fatalf("got %T is not *randomScheduler", got)
 	}
 
-	if cap(scheduler.workers) != workerNum {
-		t.Fatalf("cap(scheduler.workers) %d != workerNum %d", cap(scheduler.workers), workerNum)
+	gotCap := cap(scheduler.workers)
+	if gotCap != workerNum {
+		t.Fatalf("gotCap %d != workerNum %d", gotCap, workerNum)
 	}
 }

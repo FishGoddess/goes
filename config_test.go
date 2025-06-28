@@ -106,7 +106,8 @@ func TestConfigNewScheduler(t *testing.T) {
 		t.Fatalf("got %T is not *roundRobinScheduler", got)
 	}
 
-	if len(scheduler.workers) != workerNum {
-		t.Fatalf("len(scheduler.workers) %d != workerNum %d", len(scheduler.workers), workerNum)
+	gotLen := len(scheduler.workers)
+	if gotLen != workerNum {
+		t.Fatalf("gotLen %d != workerNum %d", gotLen, workerNum)
 	}
 }

@@ -66,7 +66,7 @@ func (e *Executor) spawnWorker() *worker {
 	return worker
 }
 
-// AvailableWorkers returns the number of workers available in the executor.
+// AvailableWorkers returns the number of workers available.
 func (e *Executor) AvailableWorkers() int {
 	e.lock.Lock()
 	defer e.lock.Unlock()

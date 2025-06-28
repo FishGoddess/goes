@@ -4,6 +4,8 @@
 
 package goes
 
+import "time"
+
 type scheduler interface {
 	// Set sets the workers to scheduler.
 	Set(workers []*worker)
@@ -13,8 +15,9 @@ type scheduler interface {
 }
 
 type worker struct {
-	executor  *Executor
-	taskQueue chan Task
+	executor   *Executor
+	taskQueue  chan Task
+	acceptTime time.Time
 }
 
 func newWorker(executor *Executor) *worker {
@@ -27,9 +30,19 @@ func newWorker(executor *Executor) *worker {
 	return w
 }
 
-// WaitingTasks returns the number of tasks waiting in the worker.
+// WaitingTasks returns the number of tasks waiting.
 func (w *worker) WaitingTasks() int {
 	return len(w.taskQueue)
+}
+
+// AcceptTime returns the accept time of worker.
+func (w *worker) AcceptTime() time.Time {
+	return w.acceptTime
+}
+
+// SetAcceptTime sets the accept time of worker.
+func (w *worker) SetAcceptTime(t time.Time) {
+	w.acceptTime = t
 }
 
 func (w *worker) handle(task Task) {
