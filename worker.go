@@ -4,15 +4,12 @@
 
 package goes
 
-type workers interface {
-	// Add adds a worker to workers.
-	Add(worker *worker)
+type scheduler interface {
+	// Set sets the workers to scheduler.
+	Set(workers []*worker)
 
-	// Next returns the next worker from workers.
-	Next() *worker
-
-	// Done will call done method on all workers.
-	Done()
+	// Get gets a worker from scheduler.
+	Get() *worker
 }
 
 type worker struct {

@@ -62,33 +62,35 @@ func TestConfigNewLocker(t *testing.T) {
 	}
 }
 
-// go test -v -cover -run=^TestConfigNewWorkers$
-func TestConfigNewWorkers(t *testing.T) {
+// go test -v -cover -run=^TestConfigNewScheduler$
+func TestConfigNewScheduler(t *testing.T) {
 	workerNum := 16
 	conf := newDefaultConfig(workerNum)
 
-	got := conf.newWorkers()
-	if _, ok := got.(*roundRobinWorkers); !ok {
-		t.Fatalf("got %T is not *roundRobinWorkers", got)
+	workers := make([]*worker, workerNum)
+	got := conf.newScheduler(workers)
+
+	if _, ok := got.(*roundRobinScheduler); !ok {
+		t.Fatalf("got %T is not *roundRobinScheduler", got)
 	}
 
-	want := &roundRobinWorkers{}
-	conf.newWorkersFunc = func(workerNum int) workers {
-		want.workers = make([]*worker, workerNum)
+	want := &roundRobinScheduler{}
+	conf.newSchedulerFunc = func(workers []*worker) scheduler {
+		want.workers = workers
 		return want
 	}
 
-	got = conf.newWorkers()
+	got = conf.newScheduler(workers)
 	if fmt.Sprintf("%p", got) != fmt.Sprintf("%p", want) {
 		t.Fatalf("got %p != want %p", got, want)
 	}
 
-	rrWorkers, ok := got.(*roundRobinWorkers)
+	scheduler, ok := got.(*roundRobinScheduler)
 	if !ok {
-		t.Fatalf("got %T is not *roundRobinWorkers", got)
+		t.Fatalf("got %T is not *roundRobinScheduler", got)
 	}
 
-	if len(rrWorkers.workers) != workerNum {
-		t.Fatalf("len(rrWorkers.workers) %d != workerNum %d", len(rrWorkers.workers), workerNum)
+	if len(scheduler.workers) != workerNum {
+		t.Fatalf("len(scheduler.workers) %d != workerNum %d", len(scheduler.workers), workerNum)
 	}
 }

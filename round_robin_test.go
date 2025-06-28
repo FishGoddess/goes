@@ -6,32 +6,31 @@ package goes
 
 import "testing"
 
-// go test -v -cover -run=^TestRoundRobinWorkers$
-func TestRoundRobinWorkers(t *testing.T) {
+// go test -v -cover -run=^TestRoundRobinScheduler$
+func TestRoundRobinScheduler(t *testing.T) {
 	workerNum := 16
-	rrWorkers := newRoundRobinWorkers(workerNum)
-
-	testWorkers := make([]*worker, 0, workerNum)
+	workers := make([]*worker, 0, workerNum)
 	for i := 0; i < workerNum; i++ {
 		worker := new(worker)
-
-		testWorkers = append(testWorkers, worker)
-		rrWorkers.Add(worker)
+		workers = append(workers, worker)
 	}
 
-	if len(rrWorkers.workers) != len(testWorkers) {
-		t.Fatalf("len(rrWorkers.workers) %d != len(testWorkers) %d", len(rrWorkers.workers), len(testWorkers))
+	scheduler := newRoundRobinScheduler(workers)
+	scheduler.Set(workers)
+
+	if len(scheduler.workers) != len(workers) {
+		t.Fatalf("len(scheduler.workers) %d != len(workers) %d", len(scheduler.workers), len(workers))
 	}
 
-	for i, worker := range testWorkers {
-		got := rrWorkers.workers[i]
+	for i, worker := range workers {
+		got := scheduler.workers[i]
 		if got != worker {
 			t.Fatalf("got %p != worker %p", got, worker)
 		}
 	}
 
-	for _, worker := range testWorkers {
-		gotNext := rrWorkers.Next()
+	for _, worker := range workers {
+		gotNext := scheduler.Get()
 		if gotNext != worker {
 			t.Fatalf("gotNext %p != worker %p", gotNext, worker)
 		}

@@ -72,36 +72,40 @@ func TestWithSyncMutex(t *testing.T) {
 	}
 }
 
-// go test -v -cover -run=^TestWithRoundRobinWorkers$
-func TestWithRoundRobinWorkers(t *testing.T) {
+// go test -v -cover -run=^TestWithRoundRobinScheduler$
+func TestWithRoundRobinScheduler(t *testing.T) {
 	workerNum := 16
 	conf := newDefaultConfig(workerNum)
-	WithRoundRobinWorkers()(conf)
+	WithRoundRobinScheduler()(conf)
 
-	got := conf.newWorkersFunc(workerNum)
-	rrWorkers, ok := got.(*roundRobinWorkers)
+	workers := make([]*worker, workerNum)
+	got := conf.newSchedulerFunc(workers)
+
+	scheduler, ok := got.(*roundRobinScheduler)
 	if !ok {
-		t.Fatalf("got %T is not *roundRobinWorkers", got)
+		t.Fatalf("got %T is not *roundRobinScheduler", got)
 	}
 
-	if cap(rrWorkers.workers) != workerNum {
-		t.Fatalf("cap(rrWorkers.workers) %d != workerNum %d", cap(rrWorkers.workers), workerNum)
+	if cap(scheduler.workers) != workerNum {
+		t.Fatalf("cap(scheduler.workers) %d != workerNum %d", cap(scheduler.workers), workerNum)
 	}
 }
 
-// go test -v -cover -run=^TestWithRandomWorkers$
-func TestWithRandomWorkers(t *testing.T) {
+// go test -v -cover -run=^TestWithRandomScheduler$
+func TestWithRandomScheduler(t *testing.T) {
 	workerNum := 16
 	conf := newDefaultConfig(workerNum)
-	WithRandomWorkers()(conf)
+	WithRandomScheduler()(conf)
 
-	got := conf.newWorkersFunc(workerNum)
-	rWorkers, ok := got.(*randomWorkers)
+	workers := make([]*worker, workerNum)
+	got := conf.newSchedulerFunc(workers)
+
+	scheduler, ok := got.(*randomScheduler)
 	if !ok {
-		t.Fatalf("got %T is not *randomWorkers", got)
+		t.Fatalf("got %T is not *randomScheduler", got)
 	}
 
-	if cap(rWorkers.workers) != workerNum {
-		t.Fatalf("cap(rWorkers.workers) %d != workerNum %d", cap(rWorkers.workers), workerNum)
+	if cap(scheduler.workers) != workerNum {
+		t.Fatalf("cap(scheduler.workers) %d != workerNum %d", cap(scheduler.workers), workerNum)
 	}
 }
