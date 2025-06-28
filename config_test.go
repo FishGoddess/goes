@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/FishGoddess/goes/pkg/spinlock"
 )
@@ -19,6 +20,29 @@ func TestNewDefaultConfig(t *testing.T) {
 
 	if conf.workerNum != workerNum {
 		t.Fatalf("conf.workerNum %d != workerNum %d", conf.workerNum, workerNum)
+	}
+}
+
+// go test -v -cover -run=^TestConfigNow$
+func TestConfigNow(t *testing.T) {
+	workerNum := 16
+	conf := newDefaultConfig(workerNum)
+
+	got := conf.now().Unix()
+	want := time.Now().Unix()
+	if got != want {
+		t.Fatalf("got %v != want %v", got, want)
+	}
+
+	wantTime := time.Unix(123456789, 0)
+	conf.nowFunc = func() time.Time {
+		return wantTime
+	}
+
+	got = conf.now().Unix()
+	want = wantTime.Unix()
+	if got != want {
+		t.Fatalf("got %v != want %v", got, want)
 	}
 }
 

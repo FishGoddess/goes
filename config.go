@@ -6,6 +6,7 @@ package goes
 
 import (
 	"sync"
+	"time"
 
 	"github.com/FishGoddess/goes/pkg/spinlock"
 )
@@ -13,6 +14,7 @@ import (
 type config struct {
 	workerNum        int
 	workerQueueSize  int
+	nowFunc          func() time.Time
 	recoverFunc      func(r any)
 	newLockerFunc    func() sync.Locker
 	newSchedulerFunc func(workers ...*worker) scheduler
@@ -22,10 +24,19 @@ func newDefaultConfig(workerNum int) *config {
 	return &config{
 		workerNum:        workerNum,
 		workerQueueSize:  64,
+		nowFunc:          nil,
 		recoverFunc:      nil,
 		newLockerFunc:    nil,
 		newSchedulerFunc: nil,
 	}
+}
+
+func (c *config) now() time.Time {
+	if c.nowFunc == nil {
+		return time.Now()
+	}
+
+	return c.nowFunc()
 }
 
 func (c *config) recoverable() bool {
