@@ -9,39 +9,32 @@ import (
 	"time"
 )
 
-type randomWorkers struct {
+type randomScheduler struct {
 	workers []*worker
 	random  *rand.Rand
 }
 
-func newRandomWorkers(workerNum int) *randomWorkers {
-	rWorkers := &randomWorkers{
-		workers: make([]*worker, 0, workerNum),
+func newRandomScheduler(workers []*worker) *randomScheduler {
+	scheduler := &randomScheduler{
+		workers: workers,
 		random:  rand.New(rand.NewSource(time.Now().Unix())),
 	}
 
-	return rWorkers
+	return scheduler
 }
 
-// Add adds a worker to workers.
-func (rw *randomWorkers) Add(worker *worker) {
-	rw.workers = append(rw.workers, worker)
+// Set sets the workers to scheduler.
+func (rs *randomScheduler) Set(workers []*worker) {
+	rs.workers = workers
 }
 
-// Next returns the next worker from workers.
-func (rw *randomWorkers) Next() *worker {
-	if len(rw.workers) <= 0 {
+// Get gets a worker from scheduler.
+func (rs *randomScheduler) Get() *worker {
+	if len(rs.workers) <= 0 {
 		return nil
 	}
 
-	index := rw.random.Intn(len(rw.workers))
-	worker := rw.workers[index]
+	index := rs.random.Intn(len(rs.workers))
+	worker := rs.workers[index]
 	return worker
-}
-
-// Done will call done method on all workers.
-func (rw *randomWorkers) Done() {
-	for _, worker := range rw.workers {
-		worker.Done()
-	}
 }

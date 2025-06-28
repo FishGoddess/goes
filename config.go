@@ -11,20 +11,20 @@ import (
 )
 
 type config struct {
-	workerNum       int
-	workerQueueSize int
-	recoverFunc     func(r any)
-	newLockerFunc   func() sync.Locker
-	newWorkersFunc  func(workerNum int) workers
+	workerNum        int
+	workerQueueSize  int
+	recoverFunc      func(r any)
+	newLockerFunc    func() sync.Locker
+	newSchedulerFunc func(workers []*worker) scheduler
 }
 
 func newDefaultConfig(workerNum int) *config {
 	return &config{
-		workerNum:       workerNum,
-		workerQueueSize: 64,
-		recoverFunc:     nil,
-		newLockerFunc:   nil,
-		newWorkersFunc:  nil,
+		workerNum:        workerNum,
+		workerQueueSize:  64,
+		recoverFunc:      nil,
+		newLockerFunc:    nil,
+		newSchedulerFunc: nil,
 	}
 }
 
@@ -42,10 +42,10 @@ func (c *config) newLocker() sync.Locker {
 	return c.newLockerFunc()
 }
 
-func (c *config) newWorkers() workers {
-	if c.newWorkersFunc == nil {
-		return newRoundRobinWorkers(c.workerNum)
+func (c *config) newScheduler(workers []*worker) scheduler {
+	if c.newSchedulerFunc == nil {
+		return newRoundRobinScheduler(workers)
 	}
 
-	return c.newWorkersFunc(c.workerNum)
+	return c.newSchedulerFunc(workers)
 }

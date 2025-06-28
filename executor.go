@@ -22,8 +22,9 @@ type Task = func()
 type Executor struct {
 	conf *config
 
-	workers workers
-	closed  bool
+	workers   []*worker
+	scheduler scheduler
+	closed    bool
 
 	wg   sync.WaitGroup
 	lock sync.Locker
@@ -45,17 +46,19 @@ func NewExecutor(workerNum int, opts ...Option) *Executor {
 	}
 
 	executor := &Executor{
-		conf:    conf,
-		workers: conf.newWorkers(),
-		closed:  false,
-		lock:    conf.newLocker(),
+		conf:   conf,
+		closed: false,
+		lock:   conf.newLocker(),
 	}
 
+	workers := make([]*worker, 0, conf.workerNum)
 	for range conf.workerNum {
 		worker := newWorker(executor)
-		executor.workers.Add(worker)
+		workers = append(workers, worker)
 	}
 
+	executor.workers = workers
+	executor.scheduler = conf.newScheduler(workers)
 	return executor
 }
 
@@ -68,7 +71,7 @@ func (e *Executor) Submit(task Task) error {
 		return ErrExecutorClosed
 	}
 
-	worker := e.workers.Next()
+	worker := e.scheduler.Get()
 	if worker == nil {
 		return ErrWorkerIsNil
 	}
@@ -87,7 +90,10 @@ func (e *Executor) Close() {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
-	e.workers.Done()
+	for _, worker := range e.workers {
+		worker.Done()
+	}
+
 	e.wg.Wait()
 	e.closed = true
 }

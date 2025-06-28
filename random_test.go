@@ -4,34 +4,46 @@
 
 package goes
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
-// go test -v -cover -run=^TestRandomWorkers$
-func TestRandomWorkers(t *testing.T) {
+// go test -v -cover -run=^TestRandomScheduler$
+func TestRandomScheduler(t *testing.T) {
 	workerNum := 16
-	rWorkers := newRandomWorkers(workerNum)
-
-	testWorkers := make([]*worker, 0, workerNum)
-	for i := 0; i < workerNum; i++ {
-		worker := new(worker)
-
-		testWorkers = append(testWorkers, worker)
-		rWorkers.Add(worker)
+	workers := make([]*worker, 0, workerNum)
+	for range workerNum {
+		workers = append(workers, new(worker))
 	}
 
-	if len(rWorkers.workers) != len(testWorkers) {
-		t.Fatalf("len(rWorkers.workers) %d != len(testWorkers) %d", len(rWorkers.workers), len(testWorkers))
+	scheduler := newRandomScheduler(workers)
+	if fmt.Sprintf("%p", scheduler.workers) != fmt.Sprintf("%p", workers) {
+		t.Fatalf("scheduler.workers %p != workers %p", scheduler.workers, workers)
 	}
 
-	for i, worker := range testWorkers {
-		got := rWorkers.workers[i]
+	if len(scheduler.workers) != len(workers) {
+		t.Fatalf("len(scheduler.workers) %d != len(workers) %d", len(scheduler.workers), len(workers))
+	}
+
+	scheduler.Set(workers)
+	if fmt.Sprintf("%p", scheduler.workers) != fmt.Sprintf("%p", workers) {
+		t.Fatalf("scheduler.workers %p != workers %p", scheduler.workers, workers)
+	}
+
+	if len(scheduler.workers) != len(workers) {
+		t.Fatalf("len(scheduler.workers) %d != len(workers) %d", len(scheduler.workers), len(workers))
+	}
+
+	for i, worker := range workers {
+		got := scheduler.workers[i]
 		if got != worker {
 			t.Fatalf("got %p != worker %p", got, worker)
 		}
 	}
 
-	for range testWorkers {
-		gotNext := rWorkers.Next()
+	for range workers {
+		gotNext := scheduler.Get()
 		if gotNext == nil {
 			t.Fatal("gotNext is nil")
 		}

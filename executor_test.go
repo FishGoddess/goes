@@ -60,7 +60,7 @@ func TestExecutorError(t *testing.T) {
 	}
 
 	executor = NewExecutor(workerNum)
-	executor.workers = &roundRobinWorkers{}
+	executor.scheduler = &roundRobinScheduler{}
 
 	err = executor.Submit(func() {})
 	if err != ErrWorkerIsNil {

@@ -60,24 +60,24 @@ func WithSyncMutex() Option {
 	}
 }
 
-// WithRoundRobinWorkers sets the new workers function using round robin strategy.
-func WithRoundRobinWorkers() Option {
-	newWorkersFunc := func(workerNum int) workers {
-		return newRoundRobinWorkers(workerNum)
+// WithRoundRobinScheduler sets the new scheduler function using round robin strategy.
+func WithRoundRobinScheduler() Option {
+	newSchedulerFunc := func(workers []*worker) scheduler {
+		return newRoundRobinScheduler(workers)
 	}
 
 	return func(conf *config) {
-		conf.newWorkersFunc = newWorkersFunc
+		conf.newSchedulerFunc = newSchedulerFunc
 	}
 }
 
-// WithRandomWorkers sets the new workers function using random strategy.
-func WithRandomWorkers() Option {
-	newWorkersFunc := func(workerNum int) workers {
-		return newRandomWorkers(workerNum)
+// WithRandomScheduler sets the new scheduler function using random strategy.
+func WithRandomScheduler() Option {
+	newSchedulerFunc := func(workers []*worker) scheduler {
+		return newRandomScheduler(workers)
 	}
 
 	return func(conf *config) {
-		conf.newWorkersFunc = newWorkersFunc
+		conf.newSchedulerFunc = newSchedulerFunc
 	}
 }
