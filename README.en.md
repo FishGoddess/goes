@@ -15,7 +15,7 @@
 * Limits the number of simultaneous goroutines and reuses them by Executor.
 * Supports multiple scheduling strategies, including round robin, random, etc.
 * Supports spin lock with backoff strategy.
-* Supports getting the number of workers in the executor.
+* Supports getting the number of workers available in the executor.
 
 _Check [HISTORY.md](./HISTORY.md) and [FUTURE.md](./FUTURE.md) to know about more information._
 

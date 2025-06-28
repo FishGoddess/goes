@@ -68,15 +68,15 @@ func TestExecutorError(t *testing.T) {
 	}
 }
 
-// go test -v -cover -run=^TestExecutorWorkerNum$
-func TestExecutorWorkerNum(t *testing.T) {
+// go test -v -cover -run=^TestExecutorAvailableWorkers$
+func TestExecutorAvailableWorkers(t *testing.T) {
 	workerNum := 16
 	workers := make([]*worker, workerNum)
 
 	executor := NewExecutor(workerNum)
 	executor.workers = workers
 
-	if executor.WorkerNum() != workerNum {
-		t.Fatalf("executor.WorkerNum() %d != workerNum %d", executor.WorkerNum(), workerNum)
+	if executor.AvailableWorkers() != workerNum {
+		t.Fatalf("executor.AvailableWorkers() %d != workerNum %d", executor.AvailableWorkers(), workerNum)
 	}
 }

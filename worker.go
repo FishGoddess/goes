@@ -27,6 +27,11 @@ func newWorker(executor *Executor) *worker {
 	return w
 }
 
+// WaitingTasks returns the number of tasks waiting in the worker.
+func (w *worker) WaitingTasks() int {
+	return len(w.taskQueue)
+}
+
 func (w *worker) handle(task Task) {
 	defer func() {
 		if r := recover(); r != nil {

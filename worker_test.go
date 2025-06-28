@@ -37,3 +37,28 @@ func TestWorkerHandle(t *testing.T) {
 		t.Fatalf("got %d != want %d", got, want)
 	}
 }
+
+// go test -v -cover -run=^TestWorkerWaitingTasks$
+func TestWorkerWaitingTasks(t *testing.T) {
+	taskQueue := make(chan Task, 4)
+	worker := &worker{taskQueue: taskQueue}
+
+	if worker.WaitingTasks() != len(taskQueue) {
+		t.Fatalf("got %d != want %d", worker.WaitingTasks(), len(taskQueue))
+	}
+
+	if worker.WaitingTasks() != 0 {
+		t.Fatalf("got %d != 0", worker.WaitingTasks())
+	}
+
+	taskQueue <- nil
+	taskQueue <- nil
+
+	if worker.WaitingTasks() != len(taskQueue) {
+		t.Fatalf("got %d != want %d", worker.WaitingTasks(), len(taskQueue))
+	}
+
+	if worker.WaitingTasks() != 2 {
+		t.Fatalf("got %d != 2", worker.WaitingTasks())
+	}
+}

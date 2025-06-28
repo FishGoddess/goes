@@ -62,8 +62,8 @@ func NewExecutor(workerNum int, opts ...Option) *Executor {
 	return executor
 }
 
-// WorkerNum returns the number of workers in the executor.
-func (e *Executor) WorkerNum() int {
+// AvailableWorkers returns the number of workers available in the executor.
+func (e *Executor) AvailableWorkers() int {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
@@ -102,6 +102,6 @@ func (e *Executor) Close() {
 		worker.Done()
 	}
 
-	e.wg.Wait()
+	e.Wait()
 	e.closed = true
 }
