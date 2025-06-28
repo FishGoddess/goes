@@ -15,6 +15,7 @@
 * 支持限制同时执行的协程数，且复用协程，使用 Executor。
 * 支持多种调度策略，包括轮询、随机等。
 * 支持使用退避策略的自旋锁。
+* 支持查询可用的 worker 数量。
 
 _历史版本的特性请查看 [HISTORY.md](./HISTORY.md)。未来版本的新特性和计划请查看 [FUTURE.md](./FUTURE.md)。_
 
@@ -74,11 +75,11 @@ goarch: amd64
 cpu: AMD EPYC 7K62 48-Core Processor
 
 BenchmarkLimiter-2               2417040               498.5 ns/op            24 B/op          1 allocs/op
-BenchmarkExecutor-2             23793781                49.9 ns/op             0 B/op          0 allocs/op
+BenchmarkExecutor-2             20458502                58.3 ns/op             0 B/op          0 allocs/op
 BenchmarkAntsPool-2              4295964               271.7 ns/op             0 B/op          0 allocs/op
 
 BenchmarkLimiterTime-2:  num is 1000000, cost is 300.936441ms
-BenchmarkExecutorTime-2: num is 1000000, cost is  51.350509ms
+BenchmarkExecutorTime-2: num is 1000000, cost is  63.026947ms
 BenchmarkAntsPoolTime-2: num is  999744, cost is 346.972287ms
 ```
 

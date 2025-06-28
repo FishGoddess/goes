@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	ErrExecutorClosed = errors.New("goes: executor is closed")
-	ErrWorkerIsNil    = errors.New("goes: worker is nil")
+	ErrExecutorIsClosed = errors.New("goes: executor is closed")
+	ErrWorkerIsNil      = errors.New("goes: worker is nil")
 )
 
 // Task is a function can be executed by executor.
@@ -45,21 +45,33 @@ func NewExecutor(workerNum int, opts ...Option) *Executor {
 		panic("goes: worker's queue size <= 0")
 	}
 
-	executor := &Executor{
-		conf:   conf,
-		closed: false,
-		lock:   conf.newLocker(),
-	}
-
 	workers := make([]*worker, 0, conf.workerNum)
-	for range conf.workerNum {
-		worker := newWorker(executor)
-		workers = append(workers, worker)
+	executor := &Executor{
+		conf:      conf,
+		workers:   workers,
+		scheduler: conf.newScheduler(),
+		closed:    false,
+		lock:      conf.newLocker(),
 	}
 
-	executor.workers = workers
-	executor.scheduler = conf.newScheduler(workers)
+	executor.spawnWorker()
 	return executor
+}
+
+func (e *Executor) spawnWorker() *worker {
+	worker := newWorker(e)
+
+	e.workers = append(e.workers, worker)
+	e.scheduler.Set(e.workers)
+	return worker
+}
+
+// AvailableWorkers returns the number of workers available in the executor.
+func (e *Executor) AvailableWorkers() int {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+
+	return len(e.workers)
 }
 
 // Submit submits a task to be handled by workers.
@@ -68,7 +80,7 @@ func (e *Executor) Submit(task Task) error {
 	defer e.lock.Unlock()
 
 	if e.closed {
-		return ErrExecutorClosed
+		return ErrExecutorIsClosed
 	}
 
 	worker := e.scheduler.Get()
@@ -76,6 +88,19 @@ func (e *Executor) Submit(task Task) error {
 		return ErrWorkerIsNil
 	}
 
+	// We don't need to create a new worker if we got a worker with no tasks.
+	if worker.WaitingTasks() <= 0 || len(e.workers) >= e.conf.workerNum {
+		worker.Accept(task)
+		return nil
+	}
+
+	// The number of workers has reached the limit, so we can only use the worker we got.
+	if len(e.workers) >= e.conf.workerNum {
+		worker.Accept(task)
+		return nil
+	}
+
+	worker = e.spawnWorker()
 	worker.Accept(task)
 	return nil
 }
@@ -94,6 +119,6 @@ func (e *Executor) Close() {
 		worker.Done()
 	}
 
-	e.wg.Wait()
+	e.Wait()
 	e.closed = true
 }

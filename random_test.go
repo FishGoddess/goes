@@ -17,7 +17,7 @@ func TestRandomScheduler(t *testing.T) {
 		workers = append(workers, new(worker))
 	}
 
-	scheduler := newRandomScheduler(workers)
+	scheduler := newRandomScheduler(workers...)
 	if fmt.Sprintf("%p", scheduler.workers) != fmt.Sprintf("%p", workers) {
 		t.Fatalf("scheduler.workers %p != workers %p", scheduler.workers, workers)
 	}

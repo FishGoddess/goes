@@ -55,8 +55,8 @@ func TestExecutorError(t *testing.T) {
 	executor.Close()
 
 	err := executor.Submit(func() {})
-	if err != ErrExecutorClosed {
-		t.Fatalf("err %v != ErrExecutorClosed %v", err, ErrExecutorClosed)
+	if err != ErrExecutorIsClosed {
+		t.Fatalf("err %v != ErrExecutorIsClosed %v", err, ErrExecutorIsClosed)
 	}
 
 	executor = NewExecutor(workerNum)
@@ -65,5 +65,54 @@ func TestExecutorError(t *testing.T) {
 	err = executor.Submit(func() {})
 	if err != ErrWorkerIsNil {
 		t.Fatalf("err %v != ErrWorkerIsNil %v", err, ErrWorkerIsNil)
+	}
+}
+
+// go test -v -cover -run=^TestExecutorAvailableWorkers$
+func TestExecutorAvailableWorkers(t *testing.T) {
+	workerNum := 16
+	executor := NewExecutor(workerNum)
+
+	if len(executor.workers) != 1 {
+		t.Fatalf("len(executor.workers) %d != 1", len(executor.workers))
+	}
+
+	if executor.AvailableWorkers() != 1 {
+		t.Fatalf("executor.AvailableWorkers() %d != 1", executor.AvailableWorkers())
+	}
+
+	executor.workers = make([]*worker, workerNum)
+
+	if executor.AvailableWorkers() != workerNum {
+		t.Fatalf("executor.AvailableWorkers() %d != workerNum %d", executor.AvailableWorkers(), workerNum)
+	}
+}
+
+// go test -v -cover -run=^TestExecutorSpawnWorker$
+func TestExecutorSpawnWorker(t *testing.T) {
+	workerNum := 16
+	executor := NewExecutor(workerNum)
+
+	if executor.AvailableWorkers() != 1 {
+		t.Fatalf("executor.AvailableWorkers() %d != 1", executor.AvailableWorkers())
+	}
+
+	for range workerNum {
+		executor.Submit(func() {})
+		time.Sleep(time.Millisecond)
+	}
+
+	if executor.AvailableWorkers() != 1 {
+		t.Fatalf("executor.AvailableWorkers() %d != 1", executor.AvailableWorkers())
+	}
+
+	for range workerNum * 2 {
+		executor.Submit(func() {
+			time.Sleep(time.Millisecond)
+		})
+	}
+
+	if executor.AvailableWorkers() != workerNum {
+		t.Fatalf("executor.AvailableWorkers() %d != workerNum %d", executor.AvailableWorkers(), workerNum)
 	}
 }

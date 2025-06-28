@@ -9,7 +9,7 @@ type roundRobinScheduler struct {
 	index   int
 }
 
-func newRoundRobinScheduler(workers []*worker) *roundRobinScheduler {
+func newRoundRobinScheduler(workers ...*worker) *roundRobinScheduler {
 	scheduler := &roundRobinScheduler{
 		workers: workers,
 		index:   -1,
