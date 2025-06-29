@@ -7,6 +7,7 @@ package goes
 import (
 	"errors"
 	"sync"
+	"time"
 )
 
 var (
@@ -24,6 +25,7 @@ type Executor struct {
 
 	workers   []*worker
 	scheduler scheduler
+	closeCh   chan struct{}
 	closed    bool
 
 	wg   sync.WaitGroup
@@ -50,11 +52,13 @@ func NewExecutor(workerNum int, opts ...Option) *Executor {
 		conf:      conf,
 		workers:   workers,
 		scheduler: conf.newScheduler(),
+		closeCh:   make(chan struct{}, 1),
 		closed:    false,
 		lock:      conf.newLocker(),
 	}
 
 	executor.spawnWorker()
+	executor.runPurgeTask()
 	return executor
 }
 
@@ -64,6 +68,54 @@ func (e *Executor) spawnWorker() *worker {
 	e.workers = append(e.workers, worker)
 	e.scheduler.Set(e.workers)
 	return worker
+}
+
+func (e *Executor) purgeActive() bool {
+	return e.conf.purgeInterval > 0 && e.conf.workerLifetime > 0
+}
+
+func (e *Executor) purgeWorkers() {
+	e.lock.Lock()
+	defer e.lock.Unlock()
+
+	now := e.conf.now()
+	oldWorkers := e.workers
+	newWorkers := make([]*worker, 0, len(oldWorkers))
+	for _, worker := range oldWorkers {
+		if worker.WaitingTasks() <= 0 && now.Sub(worker.AcceptTime()) >= e.conf.workerLifetime {
+			worker.Done()
+		} else {
+			newWorkers = append(newWorkers, worker)
+		}
+	}
+
+	e.workers = newWorkers
+	e.scheduler.Set(e.workers)
+
+	// Avoid gc leaks.
+	for i := range oldWorkers {
+		oldWorkers[i] = nil
+	}
+}
+
+func (e *Executor) runPurgeTask() {
+	if !e.purgeActive() {
+		return
+	}
+
+	go func() {
+		ticker := time.NewTicker(e.conf.purgeInterval)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				e.purgeWorkers()
+			case <-e.closeCh:
+				return
+			}
+		}
+	}()
 }
 
 // AvailableWorkers returns the number of workers available.
@@ -97,9 +149,11 @@ func (e *Executor) Submit(task Task) error {
 		worker = e.spawnWorker()
 	}
 
-	worker.SetAcceptTime(e.conf.now())
-	e.lock.Unlock()
+	if e.purgeActive() {
+		worker.SetAcceptTime(e.conf.now())
+	}
 
+	e.lock.Unlock()
 	worker.Accept(task)
 	return nil
 }

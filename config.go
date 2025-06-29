@@ -14,6 +14,8 @@ import (
 type config struct {
 	workerNum        int
 	workerQueueSize  int
+	workerLifetime   time.Duration
+	purgeInterval    time.Duration
 	nowFunc          func() time.Time
 	recoverFunc      func(r any)
 	newLockerFunc    func() sync.Locker
@@ -24,6 +26,8 @@ func newDefaultConfig(workerNum int) *config {
 	return &config{
 		workerNum:        workerNum,
 		workerQueueSize:  64,
+		workerLifetime:   0,
+		purgeInterval:    0,
 		nowFunc:          nil,
 		recoverFunc:      nil,
 		newLockerFunc:    nil,
