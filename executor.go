@@ -198,10 +198,9 @@ func (e *Executor) Close() {
 		worker.Done()
 	}
 
-	e.Wait()
-
-	e.closeCh <- struct{}{}
+	close(e.closeCh)
 	e.closed = true
 	e.workers = nil
 	e.scheduler.Set(nil)
+	e.Wait()
 }

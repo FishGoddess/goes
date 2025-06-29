@@ -177,6 +177,7 @@ func TestExecutorDynamicScaling(t *testing.T) {
 		executor.conf.purgeInterval = time.Millisecond
 		executor.conf.workerLifetime = 2 * time.Millisecond
 		executor.runPurgeTask()
+		defer executor.Close()
 
 		got := executor.AvailableWorkers()
 		if got != 1 {
