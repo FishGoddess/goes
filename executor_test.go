@@ -22,7 +22,7 @@ func TestNewExecutor(t *testing.T) {
 			}
 		}()
 
-		executor := NewExecutor(workerNum, WithWorkerQueueSize(256), WithPurgeTask(time.Minute, time.Minute))
+		executor := NewExecutor(workerNum, WithWorkerQueueSize(256), WithPurgeActive(time.Minute, time.Minute))
 		defer executor.Close()
 	})
 
@@ -46,15 +46,15 @@ func TestNewExecutor(t *testing.T) {
 	})
 
 	t.Run("purge task 1", func(t *testing.T) {
-		testCase(t, workerNum, WithPurgeTask(time.Millisecond, 0))
+		testCase(t, workerNum, WithPurgeActive(time.Millisecond, 0))
 	})
 
 	t.Run("purge task 2", func(t *testing.T) {
-		testCase(t, workerNum, WithPurgeTask(0, time.Millisecond))
+		testCase(t, workerNum, WithPurgeActive(0, time.Millisecond))
 	})
 
 	t.Run("purge task 3", func(t *testing.T) {
-		testCase(t, workerNum, WithPurgeTask(time.Millisecond, time.Millisecond))
+		testCase(t, workerNum, WithPurgeActive(time.Millisecond, time.Millisecond))
 	})
 }
 
@@ -170,8 +170,8 @@ func TestExecutorSpawnWorker(t *testing.T) {
 	}
 }
 
-// go test -v -cover -run=^TestExecutorPurgeWorkers$
-func TestExecutorPurgeWorkers(t *testing.T) {
+// go test -v -cover -run=^TestExecutorDynamicScaling$
+func TestExecutorDynamicScaling(t *testing.T) {
 	testCase := func(t *testing.T, workerNum int) {
 		executor := NewExecutor(workerNum)
 		executor.conf.purgeInterval = time.Millisecond

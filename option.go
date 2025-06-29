@@ -25,8 +25,8 @@ func WithWorkerQueueSize(size int) Option {
 	}
 }
 
-// WithPurgeTask sets the purge interval of executor and the lifetime of worker.
-func WithPurgeTask(purgeInterval time.Duration, workerLifetime time.Duration) Option {
+// WithPurgeActive sets the purge interval of executor and the lifetime of worker.
+func WithPurgeActive(purgeInterval time.Duration, workerLifetime time.Duration) Option {
 	return func(conf *config) {
 		conf.purgeInterval = purgeInterval
 		conf.workerLifetime = workerLifetime

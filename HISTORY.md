@@ -1,5 +1,11 @@
 ## ✒ 历史版本的特性介绍 (Features in old versions)
 
+### v0.2.5-alpha
+
+> 此版本发布于 2025-06-30
+
+* 自动清理 worker 机制，避免浪费 worker 资源
+
 ### v0.2.4-alpha
 
 > 此版本发布于 2025-06-28
