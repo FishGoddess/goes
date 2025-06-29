@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/FishGoddess/goes/pkg/spinlock"
 )
@@ -22,15 +23,45 @@ func TestNewDefaultConfig(t *testing.T) {
 	}
 }
 
+// go test -v -cover -run=^TestConfigNow$
+func TestConfigNow(t *testing.T) {
+	workerNum := 16
+	conf := newDefaultConfig(workerNum)
+
+	got := conf.now().Unix()
+	want := time.Now().Unix()
+	if got != want {
+		t.Fatalf("got %v != want %v", got, want)
+	}
+
+	wantTime := time.Unix(123456789, 0)
+	conf.nowFunc = func() time.Time {
+		return wantTime
+	}
+
+	got = conf.now().Unix()
+	want = wantTime.Unix()
+	if got != want {
+		t.Fatalf("got %v != want %v", got, want)
+	}
+}
+
 // go test -v -cover -run=^TestConfigRecover$
 func TestConfigRecover(t *testing.T) {
 	workerNum := 16
 	conf := newDefaultConfig(workerNum)
-	conf.recover(0)
+
+	if conf.recoverable() {
+		t.Fatalf("conf.recoverable() is wrong")
+	}
 
 	got := 0
 	conf.recoverFunc = func(r any) {
 		got = r.(int)
+	}
+
+	if !conf.recoverable() {
+		t.Fatalf("conf.recoverable() is wrong")
 	}
 
 	want := 1
@@ -39,6 +70,15 @@ func TestConfigRecover(t *testing.T) {
 	if got != want {
 		t.Fatalf("got %d != want %d", got, want)
 	}
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("conf.recover should panic")
+		}
+	}()
+
+	conf.recoverFunc = nil
+	conf.recover(0)
 }
 
 // go test -v -cover -run=^TestConfigNewLocker$
@@ -90,7 +130,8 @@ func TestConfigNewScheduler(t *testing.T) {
 		t.Fatalf("got %T is not *roundRobinScheduler", got)
 	}
 
-	if len(scheduler.workers) != workerNum {
-		t.Fatalf("len(scheduler.workers) %d != workerNum %d", len(scheduler.workers), workerNum)
+	gotLen := len(scheduler.workers)
+	if gotLen != workerNum {
+		t.Fatalf("gotLen %d != workerNum %d", gotLen, workerNum)
 	}
 }

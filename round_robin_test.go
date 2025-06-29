@@ -22,8 +22,10 @@ func TestRoundRobinScheduler(t *testing.T) {
 		t.Fatalf("scheduler.workers %p != workers %p", scheduler.workers, workers)
 	}
 
-	if len(scheduler.workers) != len(workers) {
-		t.Fatalf("len(scheduler.workers) %d != len(workers) %d", len(scheduler.workers), len(workers))
+	got := len(scheduler.workers)
+	want := len(workers)
+	if got != want {
+		t.Fatalf("got %d != want %d", got, want)
 	}
 
 	scheduler.Set(workers)
@@ -31,8 +33,10 @@ func TestRoundRobinScheduler(t *testing.T) {
 		t.Fatalf("scheduler.workers %p != workers %p", scheduler.workers, workers)
 	}
 
-	if len(scheduler.workers) != len(workers) {
-		t.Fatalf("len(scheduler.workers) %d != len(workers) %d", len(scheduler.workers), len(workers))
+	got = len(scheduler.workers)
+	want = len(workers)
+	if got != want {
+		t.Fatalf("got %d != want %d", got, want)
 	}
 
 	for i, worker := range workers {

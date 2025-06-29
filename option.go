@@ -6,6 +6,7 @@ package goes
 
 import (
 	"sync"
+	"time"
 
 	"github.com/FishGoddess/goes/pkg/spinlock"
 )
@@ -21,6 +22,21 @@ func (o Option) applyTo(conf *config) {
 func WithWorkerQueueSize(size int) Option {
 	return func(conf *config) {
 		conf.workerQueueSize = size
+	}
+}
+
+// WithPurgeActive sets the purge interval of executor and the lifetime of worker.
+func WithPurgeActive(purgeInterval time.Duration, workerLifetime time.Duration) Option {
+	return func(conf *config) {
+		conf.purgeInterval = purgeInterval
+		conf.workerLifetime = workerLifetime
+	}
+}
+
+// WithNowFunc sets the now function.
+func WithNowFunc(nowFunc func() time.Time) Option {
+	return func(conf *config) {
+		conf.nowFunc = nowFunc
 	}
 }
 

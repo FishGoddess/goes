@@ -29,5 +29,5 @@ func main() {
 	}
 
 	wg.Wait()
-	fmt.Println("total is %d", total)
+	fmt.Printf("total is %d\n", total)
 }

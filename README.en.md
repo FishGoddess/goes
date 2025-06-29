@@ -16,6 +16,7 @@
 * Supports multiple scheduling strategies, including round robin, random, etc.
 * Supports spin lock with backoff strategy.
 * Supports getting the number of workers available in the executor.
+* Supports dynamic scaling of workers in the executor.
 
 _Check [HISTORY.md](./HISTORY.md) and [FUTURE.md](./FUTURE.md) to know about more information._
 
@@ -41,7 +42,7 @@ func main() {
 
 	for i := 0; i < 20; i++ {
 		limiter.Go(func() {
-			fmt.Println("limiter --> ", time.Now())
+			fmt.Printf("limiter --> %s\n", time.Now())
 			time.Sleep(time.Second)
 		})
 	}
@@ -54,7 +55,7 @@ func main() {
 
 	for i := 0; i < 20; i++ {
 		executor.Submit(func() {
-			fmt.Println("executor --> ", time.Now())
+			fmt.Printf("executor --> %s\n", time.Now())
 			time.Sleep(time.Second)
 		})
 	}

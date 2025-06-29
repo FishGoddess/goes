@@ -16,6 +16,7 @@
 * 支持多种调度策略，包括轮询、随机等。
 * 支持使用退避策略的自旋锁。
 * 支持查询可用的 worker 数量。
+* 支持 worker 动态扩缩容。
 
 _历史版本的特性请查看 [HISTORY.md](./HISTORY.md)。未来版本的新特性和计划请查看 [FUTURE.md](./FUTURE.md)。_
 
@@ -41,7 +42,7 @@ func main() {
 
 	for i := 0; i < 20; i++ {
 		limiter.Go(func() {
-			fmt.Println("limiter --> ", time.Now())
+			fmt.Printf("limiter --> %s\n", time.Now())
 			time.Sleep(time.Second)
 		})
 	}
@@ -54,7 +55,7 @@ func main() {
 
 	for i := 0; i < 20; i++ {
 		executor.Submit(func() {
-			fmt.Println("executor --> ", time.Now())
+			fmt.Printf("executor --> %s\n", time.Now())
 			time.Sleep(time.Second)
 		})
 	}
