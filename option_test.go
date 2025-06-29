@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/FishGoddess/goes/pkg/spinlock"
 )
@@ -21,6 +22,18 @@ func TestWithWorkerQueueSize(t *testing.T) {
 
 	if conf.workerQueueSize != workerQueueSize {
 		t.Fatalf("conf.workerQueueSize %d != workerQueueSize %d", conf.workerQueueSize, workerQueueSize)
+	}
+}
+
+// go test -v -cover -run=^TestWithNowFunc$
+func TestWithNowFunc(t *testing.T) {
+	workerNum := 16
+	nowFunc := func() time.Time { return time.Now() }
+	conf := newDefaultConfig(workerNum)
+	WithNowFunc(nowFunc)(conf)
+
+	if fmt.Sprintf("%p", conf.nowFunc) != fmt.Sprintf("%p", nowFunc) {
+		t.Fatalf("conf.nowFunc %p != nowFunc %p", conf.nowFunc, nowFunc)
 	}
 }
 

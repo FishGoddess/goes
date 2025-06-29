@@ -6,6 +6,7 @@ package goes
 
 import (
 	"sync"
+	"time"
 
 	"github.com/FishGoddess/goes/pkg/spinlock"
 )
@@ -21,6 +22,13 @@ func (o Option) applyTo(conf *config) {
 func WithWorkerQueueSize(size int) Option {
 	return func(conf *config) {
 		conf.workerQueueSize = size
+	}
+}
+
+// WithNowFunc sets the now function.
+func WithNowFunc(nowFunc func() time.Time) Option {
+	return func(conf *config) {
+		conf.nowFunc = nowFunc
 	}
 }
 

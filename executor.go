@@ -91,20 +91,13 @@ func (e *Executor) Submit(task Task) error {
 		return ErrWorkerIsNil
 	}
 
-	now := e.conf.now()
-
 	// 1. We don't need to create a new worker if we got a worker with no tasks.
 	// 2. The number of workers has reached the limit, so we can only use the worker we got.
-	if worker.WaitingTasks() <= 0 || len(e.workers) >= e.conf.workerNum {
-		worker.SetAcceptTime(now)
-		e.lock.Unlock()
-
-		worker.Accept(task)
-		return nil
+	if worker.WaitingTasks() > 0 && len(e.workers) < e.conf.workerNum {
+		worker = e.spawnWorker()
 	}
 
-	worker = e.spawnWorker()
-	worker.SetAcceptTime(now)
+	worker.SetAcceptTime(e.conf.now())
 	e.lock.Unlock()
 
 	worker.Accept(task)
