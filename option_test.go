@@ -25,6 +25,23 @@ func TestWithWorkerQueueSize(t *testing.T) {
 	}
 }
 
+// go test -v -cover -run=^TestWithPurgeTask$
+func TestWithPurgeTask(t *testing.T) {
+	workerNum := 16
+	purgeInterval := time.Minute
+	workerLifetime := 3 * time.Minute
+	conf := newDefaultConfig(workerNum)
+	WithPurgeTask(purgeInterval, workerLifetime)(conf)
+
+	if conf.purgeInterval != purgeInterval {
+		t.Fatalf("conf.purgeInterval %d != purgeInterval %d", conf.purgeInterval, purgeInterval)
+	}
+
+	if conf.workerLifetime != workerLifetime {
+		t.Fatalf("conf.workerLifetime %d != workerLifetime %d", conf.workerLifetime, workerLifetime)
+	}
+}
+
 // go test -v -cover -run=^TestWithNowFunc$
 func TestWithNowFunc(t *testing.T) {
 	workerNum := 16

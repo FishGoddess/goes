@@ -5,10 +5,58 @@
 package goes
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 	"time"
 )
+
+// go test -v -cover -run=^TestNewExecutor$
+func TestNewExecutor(t *testing.T) {
+	workerNum := 16
+
+	t.Run("ok", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r != nil {
+				t.Fatalf("r should not panic")
+			}
+		}()
+
+		executor := NewExecutor(workerNum, WithWorkerQueueSize(256), WithPurgeTask(time.Minute, time.Minute))
+		defer executor.Close()
+	})
+
+	testCase := func(t *testing.T, workerNum int, opts ...Option) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Fatalf("r should panic")
+			}
+		}()
+
+		executor := NewExecutor(workerNum, opts...)
+		defer executor.Close()
+	}
+
+	t.Run("worker num", func(t *testing.T) {
+		testCase(t, 0)
+	})
+
+	t.Run("worker queue size", func(t *testing.T) {
+		testCase(t, workerNum, WithWorkerQueueSize(0))
+	})
+
+	t.Run("purge task 1", func(t *testing.T) {
+		testCase(t, workerNum, WithPurgeTask(time.Millisecond, 0))
+	})
+
+	t.Run("purge task 2", func(t *testing.T) {
+		testCase(t, workerNum, WithPurgeTask(0, time.Millisecond))
+	})
+
+	t.Run("purge task 3", func(t *testing.T) {
+		testCase(t, workerNum, WithPurgeTask(time.Millisecond, time.Millisecond))
+	})
+}
 
 // go test -v -cover -run=^TestExecutor$
 func TestExecutor(t *testing.T) {
@@ -119,5 +167,71 @@ func TestExecutorSpawnWorker(t *testing.T) {
 	got = executor.AvailableWorkers()
 	if got != workerNum {
 		t.Fatalf("got %d != workerNum %d", got, workerNum)
+	}
+}
+
+// go test -v -cover -run=^TestExecutorPurgeWorkers$
+func TestExecutorPurgeWorkers(t *testing.T) {
+	testCase := func(t *testing.T, workerNum int) {
+		executor := NewExecutor(workerNum)
+		executor.conf.purgeInterval = time.Millisecond
+		executor.conf.workerLifetime = 2 * time.Millisecond
+		executor.runPurgeTask()
+
+		got := executor.AvailableWorkers()
+		if got != 1 {
+			t.Fatalf("got %d != 1", got)
+		}
+
+		for range workerNum * 2 {
+			executor.Submit(func() {
+				time.Sleep(time.Millisecond)
+			})
+		}
+
+		got = executor.AvailableWorkers()
+		if got != workerNum {
+			t.Fatalf("got %d != workerNum %d", got, workerNum)
+		}
+
+		time.Sleep(500 * time.Microsecond)
+
+		got = executor.AvailableWorkers()
+		if got != workerNum {
+			t.Fatalf("got %d != workerNum %d", got, workerNum)
+		}
+
+		time.Sleep(5 * time.Millisecond)
+
+		got = executor.AvailableWorkers()
+		if got != 1 {
+			t.Fatalf("got %d != workerNum %d", got, workerNum)
+		}
+
+		for range workerNum * 2 {
+			executor.Submit(func() {
+				time.Sleep(time.Millisecond)
+			})
+		}
+
+		got = executor.AvailableWorkers()
+		if got != workerNum {
+			t.Fatalf("got %d != workerNum %d", got, workerNum)
+		}
+
+		time.Sleep(5 * time.Millisecond)
+
+		got = executor.AvailableWorkers()
+		if got != 1 {
+			t.Fatalf("got %d != workerNum %d", got, workerNum)
+		}
+	}
+
+	workerNums := []int{1, 2, 4, 16, 64, 256, 1024}
+	for _, workerNum := range workerNums {
+		name := fmt.Sprintf("worker num %d", workerNum)
+		t.Run(name, func(t *testing.T) {
+			testCase(t, workerNum)
+		})
 	}
 }

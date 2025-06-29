@@ -25,6 +25,14 @@ func WithWorkerQueueSize(size int) Option {
 	}
 }
 
+// WithPurgeTask sets the purge interval of executor and the lifetime of worker.
+func WithPurgeTask(purgeInterval time.Duration, workerLifetime time.Duration) Option {
+	return func(conf *config) {
+		conf.purgeInterval = purgeInterval
+		conf.workerLifetime = workerLifetime
+	}
+}
+
 // WithNowFunc sets the now function.
 func WithNowFunc(nowFunc func() time.Time) Option {
 	return func(conf *config) {

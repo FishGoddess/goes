@@ -47,6 +47,14 @@ func NewExecutor(workerNum int, opts ...Option) *Executor {
 		panic("goes: worker's queue size <= 0")
 	}
 
+	if conf.purgeInterval > 0 && conf.purgeInterval < time.Minute {
+		panic("goes: executor's purge interval < 1 minute")
+	}
+
+	if conf.workerLifetime > 0 && conf.workerLifetime < time.Minute {
+		panic("goes: executor's worker lifetime < 1 minute")
+	}
+
 	workers := make([]*worker, 0, conf.workerNum)
 	executor := &Executor{
 		conf:      conf,
@@ -79,10 +87,33 @@ func (e *Executor) purgeWorkers() {
 	defer e.lock.Unlock()
 
 	now := e.conf.now()
-	oldWorkers := e.workers
-	newWorkers := make([]*worker, 0, len(oldWorkers))
-	for _, worker := range oldWorkers {
-		if worker.WaitingTasks() <= 0 && now.Sub(worker.AcceptTime()) >= e.conf.workerLifetime {
+	purgeable := false
+
+	isPurgeable := func(worker *worker) bool {
+		return worker.WaitingTasks() <= 0 && now.Sub(worker.AcceptTime()) >= e.conf.workerLifetime
+	}
+
+	// Check if we need to purge workers.
+	for _, worker := range e.workers {
+		if isPurgeable(worker) {
+			purgeable = true
+			break
+		}
+	}
+
+	if !purgeable {
+		return
+	}
+
+	// Purge workers and we will keep one worker at least.
+	newWorkers := make([]*worker, 0, len(e.workers))
+	for _, worker := range e.workers {
+		if len(newWorkers) <= 0 {
+			newWorkers = append(newWorkers, worker)
+			continue
+		}
+
+		if isPurgeable(worker) {
 			worker.Done()
 		} else {
 			newWorkers = append(newWorkers, worker)
@@ -91,11 +122,6 @@ func (e *Executor) purgeWorkers() {
 
 	e.workers = newWorkers
 	e.scheduler.Set(e.workers)
-
-	// Avoid gc leaks.
-	for i := range oldWorkers {
-		oldWorkers[i] = nil
-	}
 }
 
 func (e *Executor) runPurgeTask() {
@@ -173,6 +199,8 @@ func (e *Executor) Close() {
 	}
 
 	e.Wait()
+
+	e.closeCh <- struct{}{}
 	e.closed = true
 	e.workers = nil
 	e.scheduler.Set(nil)
