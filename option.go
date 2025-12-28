@@ -5,18 +5,26 @@
 package goes
 
 import (
-	"sync"
 	"time"
-
-	"github.com/FishGoddess/goes/pkg/spinlock"
 )
 
-// Option is for setting config.
-type Option func(conf *config)
-
-func (o Option) applyTo(conf *config) {
-	o(conf)
+type config struct {
+	workerNum       int
+	workerQueueSize int
+	now             func() time.Time
+	handlePanic     func(r any)
 }
+
+func newConfig(workerNum int) *config {
+	return &config{
+		workerNum:       workerNum,
+		workerQueueSize: 256,
+		now:             time.Now,
+		handlePanic:     nil,
+	}
+}
+
+type Option func(conf *config)
 
 // WithWorkerQueueSize sets the queue size of worker.
 func WithWorkerQueueSize(size int) Option {
@@ -25,75 +33,16 @@ func WithWorkerQueueSize(size int) Option {
 	}
 }
 
-// WithPurgeActive sets the purge interval of executor and the lifetime of worker.
-func WithPurgeActive(purgeInterval time.Duration, workerLifetime time.Duration) Option {
+// WithNow sets the now function.
+func WithNow(now func() time.Time) Option {
 	return func(conf *config) {
-		conf.purgeInterval = purgeInterval
-		conf.workerLifetime = workerLifetime
+		conf.now = now
 	}
 }
 
-// WithNowFunc sets the now function.
-func WithNowFunc(nowFunc func() time.Time) Option {
+// WithHandlePanic sets the handle panic function.
+func WithHandlePanic(handlePanic func(r any)) Option {
 	return func(conf *config) {
-		conf.nowFunc = nowFunc
-	}
-}
-
-// WithRecoverFunc sets the recover function.
-func WithRecoverFunc(recoverFunc func(r any)) Option {
-	return func(conf *config) {
-		conf.recoverFunc = recoverFunc
-	}
-}
-
-// WithNewLockerFunc sets the new locker function.
-func WithNewLockerFunc(newLockerFunc func() sync.Locker) Option {
-	return func(conf *config) {
-		conf.newLockerFunc = newLockerFunc
-	}
-}
-
-// WithSpinLock sets the new locker function returns spin lock.
-func WithSpinLock() Option {
-	newLockerFunc := func() sync.Locker {
-		return spinlock.New()
-	}
-
-	return func(conf *config) {
-		conf.newLockerFunc = newLockerFunc
-	}
-}
-
-// WithSyncMutex sets the new locker function returns sync mutex.
-func WithSyncMutex() Option {
-	newLockerFunc := func() sync.Locker {
-		return new(sync.Mutex)
-	}
-
-	return func(conf *config) {
-		conf.newLockerFunc = newLockerFunc
-	}
-}
-
-// WithRoundRobinScheduler sets the new scheduler function using round robin strategy.
-func WithRoundRobinScheduler() Option {
-	newSchedulerFunc := func(workers ...*worker) scheduler {
-		return newRoundRobinScheduler(workers...)
-	}
-
-	return func(conf *config) {
-		conf.newSchedulerFunc = newSchedulerFunc
-	}
-}
-
-// WithRandomScheduler sets the new scheduler function using random strategy.
-func WithRandomScheduler() Option {
-	newSchedulerFunc := func(workers ...*worker) scheduler {
-		return newRandomScheduler(workers...)
-	}
-
-	return func(conf *config) {
-		conf.newSchedulerFunc = newSchedulerFunc
+		conf.handlePanic = handlePanic
 	}
 }
