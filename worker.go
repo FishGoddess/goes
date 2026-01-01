@@ -31,15 +31,13 @@ func (w *worker) do(f func()) {
 }
 
 func (w *worker) start() {
-	go func() {
-		for f := range w.funcs {
-			if f == nil {
-				return
-			}
-
-			w.do(f)
+	for f := range w.funcs {
+		if f == nil {
+			return
 		}
-	}()
+
+		w.do(f)
+	}
 }
 
 func (w *worker) stop() {

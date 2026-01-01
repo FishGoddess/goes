@@ -7,6 +7,7 @@ package goes
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"github.com/FishGoddess/rego"
 )
@@ -18,8 +19,9 @@ func newExecutorClosedErr(ctx context.Context) error {
 }
 
 type Executor struct {
-	conf *config
-	pool *rego.Pool[*worker]
+	conf  *config
+	pool  *rego.Pool[*worker]
+	group sync.WaitGroup
 }
 
 func NewExecutor(workerNum uint, opts ...Option) *Executor {
@@ -34,7 +36,7 @@ func NewExecutor(workerNum uint, opts ...Option) *Executor {
 
 func (e *Executor) acquire(ctx context.Context) (*worker, error) {
 	worker := newWorker(e.conf.queueSize, e.conf.recovery)
-	worker.start()
+	e.group.Go(worker.start)
 	return worker, nil
 }
 
@@ -50,9 +52,15 @@ func (e *Executor) Submit(ctx context.Context, f func()) error {
 	}
 
 	worker.submit(f)
+	e.pool.Release(ctx, worker)
 	return nil
 }
 
 func (e *Executor) Close(ctx context.Context) error {
-	return e.pool.Close(ctx)
+	if err := e.pool.Close(ctx); err != nil {
+		return err
+	}
+
+	e.group.Wait()
+	return nil
 }
