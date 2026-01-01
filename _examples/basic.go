@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -12,6 +13,8 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+
 	// Limits the number of simultaneous goroutines and not reuses them.
 	limiter := goes.NewLimiter(4)
 
@@ -26,10 +29,10 @@ func main() {
 
 	// Limits the number of simultaneous goroutines and reuses them.
 	executor := goes.NewExecutor(4)
-	defer executor.Close()
+	defer executor.Close(ctx)
 
 	for i := 0; i < 20; i++ {
-		executor.Submit(func() {
+		executor.Submit(ctx, func() {
 			fmt.Printf("executor --> %s\n", time.Now())
 			time.Sleep(time.Second)
 		})

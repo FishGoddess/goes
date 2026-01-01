@@ -4,45 +4,38 @@
 
 package goes
 
-import (
-	"time"
-)
-
 type config struct {
-	workerNum       int
-	workerQueueSize int
-	now             func() time.Time
-	handlePanic     func(r any)
+	queueSize uint
+	recovery  func(r any)
 }
 
-func newConfig(workerNum int) *config {
+func newConfig() *config {
 	return &config{
-		workerNum:       workerNum,
-		workerQueueSize: 256,
-		now:             time.Now,
-		handlePanic:     nil,
+		queueSize: 64,
+		recovery:  nil,
 	}
+}
+
+func (c *config) apply(opts ...Option) *config {
+	for _, opt := range opts {
+		opt(c)
+	}
+
+	return c
 }
 
 type Option func(conf *config)
 
-// WithWorkerQueueSize sets the queue size of worker.
-func WithWorkerQueueSize(size int) Option {
+// WithQueueSize sets the queue size of worker.
+func WithQueueSize(queueSize uint) Option {
 	return func(conf *config) {
-		conf.workerQueueSize = size
+		conf.queueSize = queueSize
 	}
 }
 
-// WithNow sets the now function.
-func WithNow(now func() time.Time) Option {
+// WithRecovery sets the recovery function.
+func WithRecovery(recovery func(r any)) Option {
 	return func(conf *config) {
-		conf.now = now
-	}
-}
-
-// WithHandlePanic sets the handle panic function.
-func WithHandlePanic(handlePanic func(r any)) Option {
-	return func(conf *config) {
-		conf.handlePanic = handlePanic
+		conf.recovery = recovery
 	}
 }
