@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -65,6 +66,7 @@ func BenchmarkLimiterTime(b *testing.B) {
 
 // go test -v -run=none -bench=^BenchmarkExecutor$ -benchmem -benchtime=1s
 func BenchmarkExecutor(b *testing.B) {
+	ctx := context.Background()
 	executor := goes.NewExecutor(workerNum)
 
 	num := uint32(0)
@@ -74,16 +76,17 @@ func BenchmarkExecutor(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			executor.Submit(task)
+			executor.Submit(ctx, task)
 		}
 	})
 
-	executor.Close()
+	executor.Close(ctx)
 	b.Logf("num is %d", num)
 }
 
 // go test -v -run=none -bench=^BenchmarkExecutorTime$ -benchmem -benchtime=1s
 func BenchmarkExecutorTime(b *testing.B) {
+	ctx := context.Background()
 	executor := goes.NewExecutor(workerNum)
 
 	num := uint32(0)
@@ -93,10 +96,10 @@ func BenchmarkExecutorTime(b *testing.B) {
 
 	beginTime := time.Now()
 	for range timeLoop {
-		executor.Submit(task)
+		executor.Submit(ctx, task)
 	}
 
-	executor.Close()
+	executor.Close(ctx)
 
 	cost := time.Since(beginTime)
 	b.Logf("num is %d, cost is %s", num, cost)

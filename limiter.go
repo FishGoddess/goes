@@ -16,7 +16,7 @@ type token struct{}
 // Limiter limits the simultaneous number of goroutines.
 type Limiter struct {
 	tokens chan token
-	wg     sync.WaitGroup
+	group  sync.WaitGroup
 }
 
 // NewLimiter creates a new limiter with limit.
@@ -49,12 +49,12 @@ func (l *Limiter) releaseToken() {
 // Go starts a goroutine to run f().
 func (l *Limiter) Go(f func()) {
 	l.acquireToken()
-	l.wg.Add(1)
+	l.group.Add(1)
 
 	go func() {
 		defer func() {
 			l.releaseToken()
-			l.wg.Done()
+			l.group.Done()
 		}()
 
 		f()
@@ -63,5 +63,5 @@ func (l *Limiter) Go(f func()) {
 
 // Wait waits all goroutines to be finished.
 func (l *Limiter) Wait() {
-	l.wg.Wait()
+	l.group.Wait()
 }
