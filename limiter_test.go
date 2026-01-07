@@ -1,4 +1,4 @@
-// Copyright 2023 FishGoddess. All rights reserved.
+// Copyright 2025 FishGoddess. All rights reserved.
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -13,7 +13,7 @@ import (
 // go test -v -cover -run=^TestLimiter$
 func TestLimiter(t *testing.T) {
 	limit := 16
-	limiter := NewLimiter(limit)
+	limiter := NewLimiter(uint(limit))
 
 	var countMap = make(map[int64]int, 16)
 	var lock sync.Mutex

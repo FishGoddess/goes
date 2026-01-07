@@ -30,6 +30,7 @@ $ go get -u github.com/FishGoddess/goes
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -37,6 +38,8 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+
 	// Limits the number of simultaneous goroutines and not reuses them.
 	limiter := goes.NewLimiter(4)
 
@@ -54,7 +57,7 @@ func main() {
 	defer executor.Close()
 
 	for i := 0; i < 20; i++ {
-		executor.Submit(func() {
+		executor.Submit(ctx, func() {
 			fmt.Printf("executor --> %s\n", time.Now())
 			time.Sleep(time.Second)
 		})
@@ -73,20 +76,22 @@ $ make bench
 ```bash
 goos: linux
 goarch: amd64
-cpu: AMD EPYC 7K62 48-Core Processor
+cpu: Intel(R) Xeon(R) CPU E5-26xx v4
 
-BenchmarkLimiter-2               2417040               498.5 ns/op            24 B/op          1 allocs/op
-BenchmarkExecutor-2             20458502                58.3 ns/op             0 B/op          0 allocs/op
-BenchmarkAntsPool-2              4295964               271.7 ns/op             0 B/op          0 allocs/op
+BenchmarkLimiter-2               1256862               870.5 ns/op            24 B/op          1 allocs/op
+BenchmarkExecutor-2              3916312               286.8 ns/op             0 B/op          0 allocs/op
+BenchmarkAntsPool-2              1396972               846.6 ns/op             0 B/op          0 allocs/op
+BenchmarkConcPool-2              1473289               843.4 ns/op             0 B/op          0 allocs/op
 
-BenchmarkLimiterTime-2:  num is 1000000, cost is 300.936441ms
-BenchmarkExecutorTime-2: num is 1000000, cost is  63.026947ms
-BenchmarkAntsPoolTime-2: num is  999744, cost is 346.972287ms
+BenchmarkLimiterTime-2:  num is 500000, cost is 391.462505ms
+BenchmarkExecutorTime-2: num is 500000, cost is 180.279155ms
+BenchmarkAntsPoolTime-2: num is 500000, cost is 547.328528ms
+BenchmarkConcPoolTime-2: num is 500000, cost is 390.354196ms
 ```
 
-> 很明显，goes.Executor 的性能比功能更丰富的 ants.Pool 要高出 5 倍左右，所以当你需要一个很轻量且高性能的异步任务执行器时，可以尝试下 goes。
+> 很明显，goes.Executor 的性能比其他的并发执行库高很多，所以当你需要一个轻量且高性能的并发执行器时，可以尝试下 goes.Executor。
 
-> 测试文件：[_examples/performance_test.go](./_examples/performance_test.go)。
+> 测试文件：[_examples/basic_test.go](./_examples/basic_test.go)。
 
 ### 👥 贡献者
 

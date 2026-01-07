@@ -1,10 +1,11 @@
-// Copyright 2025s FishGoddess. All rights reserved.
+// Copyright 2025 FishGoddess. All rights reserved.
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -12,6 +13,8 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+
 	// Limits the number of simultaneous goroutines and not reuses them.
 	limiter := goes.NewLimiter(4)
 
@@ -29,7 +32,7 @@ func main() {
 	defer executor.Close()
 
 	for i := 0; i < 20; i++ {
-		executor.Submit(func() {
+		executor.Submit(ctx, func() {
 			fmt.Printf("executor --> %s\n", time.Now())
 			time.Sleep(time.Second)
 		})

@@ -1,4 +1,4 @@
-// Copyright 2023 FishGoddess. All rights reserved.
+// Copyright 2025 FishGoddess. All rights reserved.
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -13,14 +13,18 @@ const (
 
 type token struct{}
 
-// Limiter limits the simultaneous number of goroutines.
+// Limiter starts some goroutines to do tasks concurrently.
 type Limiter struct {
+	conf *config
+
 	tokens chan token
-	wg     sync.WaitGroup
+	group  sync.WaitGroup
 }
 
 // NewLimiter creates a new limiter with limit.
-func NewLimiter(limit int) *Limiter {
+func NewLimiter(limit uint, opts ...Option) *Limiter {
+	conf := newConfig().apply(opts...)
+
 	if limit < minLimit {
 		limit = minLimit
 	}
@@ -30,6 +34,7 @@ func NewLimiter(limit int) *Limiter {
 	}
 
 	return &Limiter{
+		conf:   conf,
 		tokens: make(chan token, limit),
 	}
 }
@@ -46,22 +51,22 @@ func (l *Limiter) releaseToken() {
 	}
 }
 
-// Go starts a goroutine to run f().
-func (l *Limiter) Go(f func()) {
+// Go starts a goroutine to run task.
+func (l *Limiter) Go(task Task) {
 	l.acquireToken()
-	l.wg.Add(1)
+	l.group.Add(1)
 
 	go func() {
 		defer func() {
 			l.releaseToken()
-			l.wg.Done()
+			l.group.Done()
 		}()
 
-		f()
+		task.Do(l.conf.recovery)
 	}()
 }
 
 // Wait waits all goroutines to be finished.
 func (l *Limiter) Wait() {
-	l.wg.Wait()
+	l.group.Wait()
 }
