@@ -24,10 +24,11 @@ var (
 type Executor struct {
 	conf *config
 
-	tasks  chan Task
-	done   chan struct{}
-	closed atomic.Bool
-	group  sync.WaitGroup
+	workers uint
+	tasks   chan Task
+	done    chan struct{}
+	closed  atomic.Bool
+	group   sync.WaitGroup
 }
 
 // NewExecutor creates a executor with workers.
@@ -43,9 +44,10 @@ func NewExecutor(workers uint, opts ...Option) *Executor {
 	}
 
 	executor := &Executor{
-		conf:  conf,
-		tasks: make(chan Task, conf.queueSize),
-		done:  make(chan struct{}),
+		conf:    conf,
+		workers: workers,
+		tasks:   make(chan Task, conf.queueSize),
+		done:    make(chan struct{}),
 	}
 
 	for range workers {
