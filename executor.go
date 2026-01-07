@@ -8,58 +8,69 @@ import (
 	"context"
 	"errors"
 	"sync"
-
-	"github.com/FishGoddess/rego"
+	"sync/atomic"
 )
 
 var ErrExecutorClosed = errors.New("goes: executor is closed")
 
-func newExecutorClosedErr(ctx context.Context) error {
-	return ErrExecutorClosed
-}
-
 type Executor struct {
-	conf  *config
-	pool  *rego.Pool[*worker]
+	conf *config
+
+	tasks  chan Task
+	done   chan struct{}
+	closed atomic.Bool
+
 	group sync.WaitGroup
 }
 
-func NewExecutor(workerNum uint, opts ...Option) *Executor {
+func NewExecutor(workers uint, opts ...Option) *Executor {
 	conf := newConfig().apply(opts...)
 
-	executor := new(Executor)
-	executor.conf = conf
-	executor.pool = rego.New(uint64(workerNum), executor.acquire, executor.release)
-	executor.pool.WithPoolClosedErrFunc(newExecutorClosedErr)
+	if workers < 1 {
+		panic("goes: workers < 1")
+	}
+
+	executor := &Executor{
+		conf:  conf,
+		tasks: make(chan Task, conf.queueSize),
+		done:  make(chan struct{}),
+	}
+
+	for range workers {
+		executor.group.Go(executor.worker)
+	}
+
 	return executor
 }
 
-func (e *Executor) acquire(ctx context.Context) (*worker, error) {
-	worker := newWorker(e.conf.queueSize, e.conf.recovery)
-	e.group.Go(worker.start)
-	return worker, nil
+func (e *Executor) worker() {
+	for task := range e.tasks {
+		task.Do(e.conf.recovery)
+	}
 }
 
-func (e *Executor) release(ctx context.Context, worker *worker) error {
-	worker.stop()
-	return nil
-}
-
-func (e *Executor) Submit(ctx context.Context, f func()) error {
-	worker, err := e.pool.Acquire(ctx)
-	if err != nil {
-		return err
+func (e *Executor) Submit(ctx context.Context, task Task) error {
+	if e.closed.Load() {
+		return ErrExecutorClosed
 	}
 
-	worker.submit(f)
-	e.pool.Release(ctx, worker)
-	return nil
+	select {
+	case e.tasks <- task:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-e.done:
+		return ErrExecutorClosed
+	}
 }
 
-func (e *Executor) Close(ctx context.Context) error {
-	if err := e.pool.Close(ctx); err != nil {
-		return err
+func (e *Executor) Close() error {
+	if !e.closed.CompareAndSwap(false, true) {
+		return nil
 	}
+
+	close(e.done)
+	close(e.tasks)
 
 	e.group.Wait()
 	return nil

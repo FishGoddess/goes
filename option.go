@@ -11,7 +11,7 @@ type config struct {
 
 func newConfig() *config {
 	return &config{
-		queueSize: 64,
+		queueSize: 1024,
 		recovery:  nil,
 	}
 }
@@ -26,7 +26,7 @@ func (c *config) apply(opts ...Option) *config {
 
 type Option func(conf *config)
 
-// WithQueueSize sets the queue size of worker.
+// WithQueueSize sets the queue size.
 func WithQueueSize(queueSize uint) Option {
 	return func(conf *config) {
 		conf.queueSize = queueSize

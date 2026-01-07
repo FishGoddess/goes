@@ -12,13 +12,13 @@ import (
 
 	"github.com/FishGoddess/goes"
 	//"github.com/panjf2000/ants/v2"
+	//"github.com/sourcegraph/conc/pool"
 )
 
 const (
-	limit     = 256
-	workerNum = limit
-	size      = limit
-	timeLoop  = 100_0000
+	limit    = 64
+	workers  = limit
+	timeLoop = 50_0000
 )
 
 func bench(num *uint32) {
@@ -67,7 +67,7 @@ func BenchmarkLimiterTime(b *testing.B) {
 // go test -v -run=none -bench=^BenchmarkExecutor$ -benchmem -benchtime=1s
 func BenchmarkExecutor(b *testing.B) {
 	ctx := context.Background()
-	executor := goes.NewExecutor(workerNum)
+	executor := goes.NewExecutor(workers)
 
 	num := uint32(0)
 	task := func() {
@@ -80,14 +80,14 @@ func BenchmarkExecutor(b *testing.B) {
 		}
 	})
 
-	executor.Close(ctx)
+	executor.Close()
 	b.Logf("num is %d", num)
 }
 
 // go test -v -run=none -bench=^BenchmarkExecutorTime$ -benchmem -benchtime=1s
 func BenchmarkExecutorTime(b *testing.B) {
 	ctx := context.Background()
-	executor := goes.NewExecutor(workerNum)
+	executor := goes.NewExecutor(workers)
 
 	num := uint32(0)
 	task := func() {
@@ -99,7 +99,7 @@ func BenchmarkExecutorTime(b *testing.B) {
 		executor.Submit(ctx, task)
 	}
 
-	executor.Close(ctx)
+	executor.Close()
 
 	cost := time.Since(beginTime)
 	b.Logf("num is %d, cost is %s", num, cost)
@@ -107,7 +107,7 @@ func BenchmarkExecutorTime(b *testing.B) {
 
 // // go test -v -run=none -bench=^BenchmarkAntsPool$ -benchmem -benchtime=1s
 // func BenchmarkAntsPool(b *testing.B) {
-// 	pool, _ := ants.NewPool(workerNum)
+// 	pool, _ := ants.NewPool(workers)
 //
 // 	num := uint32(0)
 // 	task := func() {
@@ -126,7 +126,7 @@ func BenchmarkExecutorTime(b *testing.B) {
 //
 // // go test -v -run=none -bench=^BenchmarkAntsPoolTime$ -benchmem -benchtime=1s
 // func BenchmarkAntsPoolTime(b *testing.B) {
-// 	pool, _ := ants.NewPool(workerNum)
+// 	pool, _ := ants.NewPool(workers)
 //
 // 	num := uint32(0)
 // 	task := func() {
@@ -139,6 +139,45 @@ func BenchmarkExecutorTime(b *testing.B) {
 // 	}
 //
 // 	pool.Release()
+//
+// 	cost := time.Since(beginTime)
+// 	b.Logf("num is %d, cost is %s", num, cost)
+// }
+//
+// // // go test -v -run=none -bench=^BenchmarkConcPool$ -benchmem -benchtime=1s
+// func BenchmarkConcPool(b *testing.B) {
+// 	pool := pool.New().WithMaxGoroutines(workers)
+//
+// 	num := uint32(0)
+// 	task := func() {
+// 		bench(&num)
+// 	}
+//
+// 	b.RunParallel(func(pb *testing.PB) {
+// 		for pb.Next() {
+// 			pool.Go(task)
+// 		}
+// 	})
+//
+// 	pool.Wait()
+// 	b.Logf("num is %d", num)
+// }
+//
+// // go test -v -run=none -bench=^BenchmarkConcPoolTime$ -benchmem -benchtime=1s
+// func BenchmarkConcPoolTime(b *testing.B) {
+// 	pool := pool.New().WithMaxGoroutines(workers)
+//
+// 	num := uint32(0)
+// 	task := func() {
+// 		bench(&num)
+// 	}
+//
+// 	beginTime := time.Now()
+// 	for range timeLoop {
+// 		pool.Go(task)
+// 	}
+//
+// 	pool.Wait()
 //
 // 	cost := time.Since(beginTime)
 // 	b.Logf("num is %d, cost is %s", num, cost)
