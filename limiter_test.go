@@ -46,3 +46,20 @@ func TestLimiter(t *testing.T) {
 		t.Fatalf("gotTotalCount %d != totalCount %d", gotTotalCount, totalCount)
 	}
 }
+
+// go test -v -cover -run=^TestLimiterMinMax$
+func TestLimiterMinMax(t *testing.T) {
+	limiter := NewLimiter(minLimit - 1)
+
+	got := cap(limiter.tokens)
+	if got != minLimit {
+		t.Fatalf("got %d != want %d", got, minLimit)
+	}
+
+	limiter = NewLimiter(maxLimit + 1)
+
+	got = cap(limiter.tokens)
+	if got != maxLimit {
+		t.Fatalf("got %d != want %d", got, maxLimit)
+	}
+}
