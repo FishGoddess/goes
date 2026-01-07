@@ -66,7 +66,7 @@ func (l *Limiter) Go(task Task) {
 	}()
 }
 
-// Wait waits all goroutines to be finished.
+// Wait waits all tasks to be done.
 func (l *Limiter) Wait() {
 	l.group.Wait()
 }
