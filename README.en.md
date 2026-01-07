@@ -5,18 +5,14 @@
 [![Coverage](_icons/coverage.svg)](./_icons/coverage.svg)
 ![Test](https://github.com/FishGoddess/goes/actions/workflows/test.yml/badge.svg)
 
-**Goes** is a easy-to-use and lightweight lib for executing async tasks.
+**Goes** is an easy-to-use library for concurrent tasks.
 
 [阅读中文版的文档](./README.md)
 
 ### 🥇 Features
 
-* Limits the number of simultaneous goroutines and not reuses them by Limiter.
-* Limits the number of simultaneous goroutines and reuses them by Executor.
-* Supports multiple scheduling strategies, including round robin, random, etc.
-* Supports spin lock with backoff strategy.
-* Supports getting the number of workers available in the executor.
-* Supports dynamic scaling of workers in the executor.
+* Limits goroutines by using Limiter.
+* Reuses goroutines by using Executor.
 
 _Check [HISTORY.md](./HISTORY.md) and [FUTURE.md](./FUTURE.md) to know about more information._
 
