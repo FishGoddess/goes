@@ -77,15 +77,14 @@ func (e *Executor) Submit(ctx context.Context, task Task) error {
 	}
 }
 
-// Close closes the executor and returns an error if failed.
-func (e *Executor) Close() error {
+// Close closes the executor and waits all tasks to be done.
+func (e *Executor) Close() {
 	if !e.closed.CompareAndSwap(false, true) {
-		return nil
+		return
 	}
 
 	close(e.done)
 	close(e.tasks)
 
 	e.group.Wait()
-	return nil
 }

@@ -5,18 +5,14 @@
 [![Coverage](_icons/coverage.svg)](./_icons/coverage.svg)
 ![Test](https://github.com/FishGoddess/goes/actions/workflows/test.yml/badge.svg)
 
-**Goes** 是一个简单易用且轻量的异步任务执行库。
+**Goes** 是一个简单易用的并发执行库。
 
 [Read me in English](./README.en.md)
 
 ### 🥇 功能特性
 
-* 支持只限制同时执行的协程数，但不复用协程，使用 Limiter。
-* 支持限制同时执行的协程数，且复用协程，使用 Executor。
-* 支持多种调度策略，包括轮询、随机等。
-* 支持使用退避策略的自旋锁。
-* 支持查询可用的 worker 数量。
-* 支持 worker 动态扩缩容。
+* 支持限制同时执行的协程数，使用 Limiter。
+* 支持复用同时执行的协程数，使用 Executor。
 
 _历史版本的特性请查看 [HISTORY.md](./HISTORY.md)。未来版本的新特性和计划请查看 [FUTURE.md](./FUTURE.md)。_
 
