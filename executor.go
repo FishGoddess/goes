@@ -11,23 +11,35 @@ import (
 	"sync/atomic"
 )
 
-var ErrExecutorClosed = errors.New("goes: executor is closed")
+const (
+	minWorkers = 1
+	maxWorkers = 10000
+)
 
+var (
+	ErrExecutorClosed = errors.New("goes: executor is closed")
+)
+
+// Executor starts some workers to do tasks concurrently.
 type Executor struct {
 	conf *config
 
 	tasks  chan Task
 	done   chan struct{}
 	closed atomic.Bool
-
-	group sync.WaitGroup
+	group  sync.WaitGroup
 }
 
+// NewExecutor creates a executor with workers.
 func NewExecutor(workers uint, opts ...Option) *Executor {
 	conf := newConfig().apply(opts...)
 
-	if workers < 1 {
-		panic("goes: workers < 1")
+	if workers < minWorkers {
+		workers = minWorkers
+	}
+
+	if workers > maxWorkers {
+		workers = maxWorkers
 	}
 
 	executor := &Executor{
@@ -49,6 +61,7 @@ func (e *Executor) worker() {
 	}
 }
 
+// Submit submits a task to executor and returns an error if failed.
 func (e *Executor) Submit(ctx context.Context, task Task) error {
 	if e.closed.Load() {
 		return ErrExecutorClosed
@@ -64,6 +77,7 @@ func (e *Executor) Submit(ctx context.Context, task Task) error {
 	}
 }
 
+// Close closes the executor and returns an error if failed.
 func (e *Executor) Close() error {
 	if !e.closed.CompareAndSwap(false, true) {
 		return nil

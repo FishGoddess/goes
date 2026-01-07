@@ -13,14 +13,18 @@ const (
 
 type token struct{}
 
-// Limiter limits the simultaneous number of goroutines.
+// Limiter starts some goroutines to do tasks concurrently.
 type Limiter struct {
+	conf *config
+
 	tokens chan token
 	group  sync.WaitGroup
 }
 
 // NewLimiter creates a new limiter with limit.
-func NewLimiter(limit int) *Limiter {
+func NewLimiter(limit uint, opts ...Option) *Limiter {
+	conf := newConfig().apply(opts...)
+
 	if limit < minLimit {
 		limit = minLimit
 	}
@@ -30,6 +34,7 @@ func NewLimiter(limit int) *Limiter {
 	}
 
 	return &Limiter{
+		conf:   conf,
 		tokens: make(chan token, limit),
 	}
 }
@@ -46,8 +51,8 @@ func (l *Limiter) releaseToken() {
 	}
 }
 
-// Go starts a goroutine to run f().
-func (l *Limiter) Go(f func()) {
+// Go starts a goroutine to run task.
+func (l *Limiter) Go(task Task) {
 	l.acquireToken()
 	l.group.Add(1)
 
@@ -57,7 +62,7 @@ func (l *Limiter) Go(f func()) {
 			l.group.Done()
 		}()
 
-		f()
+		task.Do(l.conf.recovery)
 	}()
 }
 

@@ -13,7 +13,7 @@ import (
 // go test -v -cover -run=^TestLimiter$
 func TestLimiter(t *testing.T) {
 	limit := 16
-	limiter := NewLimiter(limit)
+	limiter := NewLimiter(uint(limit))
 
 	var countMap = make(map[int64]int, 16)
 	var lock sync.Mutex
