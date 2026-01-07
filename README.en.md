@@ -36,7 +36,7 @@ import (
 func main() {
 	ctx := context.Background()
 
-	// Limits the number of simultaneous goroutines and not reuses them.
+	// Limits goroutines.
 	limiter := goes.NewLimiter(4)
 
 	for i := 0; i < 20; i++ {
@@ -48,7 +48,7 @@ func main() {
 
 	limiter.Wait()
 
-	// Limits the number of simultaneous goroutines and reuses them.
+	// Reuses goroutines.
 	executor := goes.NewExecutor(4)
 	defer executor.Close()
 
